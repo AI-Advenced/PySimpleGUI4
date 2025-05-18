@@ -2727,18 +2727,18 @@ class Element:
         Turns on Grab Anywhere functionality AFTER a window has been created.  Don't try on a window that's not yet
         been Finalized or Read.
         """
-        self.Widget.bind("<Control-Button-1>", self.ParentForm._StartMove)
+        self.Widget.bind("<Control-Button-1>", self.ParentForm._start_move)
         self.Widget.bind("<Control-ButtonRelease-1>", self.ParentForm._StopMove)
-        self.Widget.bind("<Control-B1-Motion>", self.ParentForm._OnMotion)
+        self.Widget.bind("<Control-B1-Motion>", self.ParentForm._on_motion)
 
     def _grab_anywhere_on(self):
         """
         Turns on Grab Anywhere functionality AFTER a window has been created.  Don't try on a window that's not yet
         been Finalized or Read.
         """
-        self.Widget.bind("<ButtonPress-1>", self.ParentForm._StartMove)
+        self.Widget.bind("<ButtonPress-1>", self.ParentForm._start_move)
         self.Widget.bind("<ButtonRelease-1>", self.ParentForm._StopMove)
-        self.Widget.bind("<B1-Motion>", self.ParentForm._OnMotion)
+        self.Widget.bind("<B1-Motion>", self.ParentForm._on_motion)
 
     def _grab_anywhere_off(self):
         """
@@ -2830,11 +2830,11 @@ class Element:
                     self.ParentForm.TKRightClickMenu = top_menu
                     if running_mac():
                         self.ParentForm.TKroot.bind(
-                            "<ButtonRelease-2>", self.ParentForm._RightClickMenuCallback
+                            "<ButtonRelease-2>", self.ParentForm._right_click_menu_callback
                         )
                     else:
                         self.ParentForm.TKroot.bind(
-                            "<ButtonRelease-3>", self.ParentForm._RightClickMenuCallback
+                            "<ButtonRelease-3>", self.ParentForm._right_click_menu_callback
                         )
             if running_mac():
                 self.Widget.bind("<ButtonRelease-2>", self._RightClickMenuCallback)
@@ -6804,7 +6804,7 @@ class Button(Element):
                 if not isinstance(target, str):
                     if target[0] < 0:
                         target = [self.Position[0] + target[0], target[1]]
-                    target_element = self.ParentContainer._GetElementAtLocation(target)
+                    target_element = self.ParentContainer._get_element_at_location(target)
                 else:
                     target_element = self.ParentForm.find_element(target)
             try:
@@ -6964,7 +6964,7 @@ class Button(Element):
             else:
                 self.ParentForm.LastButtonClicked = self.ButtonText
             self.ParentForm.FormRemainedOpen = False
-            self.ParentForm._Close()
+            self.ParentForm._close()
             _exit_mainloop(self.ParentForm)
 
             if self.ParentForm.NonBlocking:
@@ -6985,7 +6985,7 @@ class Button(Element):
         elif (
                 self.BType == BUTTON_TYPE_CLOSES_WIN_ONLY
         ):  # special kind of button that does not exit main loop
-            self.ParentForm._Close(without_event=True)
+            self.ParentForm._close(without_event=True)
             self.ParentForm.TKroot.destroy()  # close the window with tkinter
             Window._DecrementOpenCount()
         elif (
@@ -10191,10 +10191,10 @@ class TabGroup(Element):
         self.add_row(tab_element)
         tab_element.TKFrame = tab_element.Widget = tk.Frame(self.TKNotebook)
         form = self.ParentForm
-        form._BuildKeyDictForWindow(form, tab_element, form.AllKeysDict)
+        form._build_key_dict_for_window(form, tab_element, form.AllKeysDict)
         form.AllKeysDict[tab_element.Key] = tab_element
         # Pack the tab's layout into the tab. NOTE - This does NOT pack the Tab itself... for that see below...
-        PackFormIntoFrame(tab_element, tab_element.TKFrame, self.ParentForm)
+        pack_form_into_frame(tab_element, tab_element.TKFrame, self.ParentForm)
 
         # - This is below -    Perform the same operation that is performed when a Tab is packed into the window.
         # If there's an image in the tab, then do the imagey-stuff
@@ -13286,8 +13286,7 @@ class Window:
         :param *args: List[Elements]
         :type *args:
         """
-        NumRows = len(self.Rows)  # number of existing rows is our row number
-        CurrentRowNumber = NumRows  # this row's number
+        CurrentRowNumber = len(self.Rows)  # number of existing rows is our row number
         CurrentRow = []  # start with a blank row and build up
         # -------------------------  Add the elements to a row  ------------------------- #
         for i, element in enumerate(
@@ -13295,7 +13294,6 @@ class Window:
         ):  # Loop through list of elements and add them to the row
             if isinstance(element, tuple) or isinstance(element, list):
                 self.add_row(*element)
-                continue
                 _error_popup_with_traceback(
                     "Error creating Window layout",
                     "Layout has a LIST instead of an ELEMENT",
@@ -13371,7 +13369,7 @@ class Window:
         if Window._watermark is not None:
             self.add_row(Window._watermark(self))
 
-    def layout(self, rows: List[List[Elements]]) -> Window:
+    def layout(self, rows: List[List[Element]]):
         """
         Second of two preferred ways of telling a Window what its layout is. The other way is to pass the layout as
         a parameter to Window object.  The parameter method is the currently preferred method. This call to Layout
@@ -13416,7 +13414,7 @@ class Window:
             self._has_custom_titlebar = True
         return self
 
-    def extend_layout(self, container, rows):
+    def extend_layout(self, container, rows: List[List[Element]]):
         """
         Adds new rows to an existing container element inside of this window
         If the container is a scrollable Column, you need to also call the contents_changed() method
@@ -13435,13 +13433,12 @@ class Window:
             frame = container.Widget.TKFrame
         else:
             frame = container.Widget
-        PackFormIntoFrame(column, frame, self)
-        # sg.PackFormIntoFrame(col, window.TKroot, window)
+        pack_form_into_frame(column, frame, self)
         self.AddRow(column)
-        self.AllKeysDict = self._BuildKeyDictForWindow(self, column, self.AllKeysDict)
+        self.AllKeysDict = self._build_key_dict_for_window(self, column, self.AllKeysDict)
         return self
 
-    def _Show(self, non_blocking: bool = False):
+    def _show(self, non_blocking: bool = False):
         """
         NOT TO BE CALLED BY USERS.  INTERNAL ONLY!
         It's this method that first shows the window to the user, collects results
@@ -13530,7 +13527,7 @@ class Window:
                     pass
         self.WindowIcon = wicon
 
-    def _GetElementAtLocation(self, location: Tuple[int, int]):
+    def _get_element_at_location(self, location: Tuple[int, int]):
         """
         Given a (row, col) location in a layout, return the element located at that position
         :param location: Return the element located at (row, col) in layout
@@ -13543,7 +13540,7 @@ class Window:
         element = row[col_num]
         return element
 
-    def _GetDefaultElementSize(self):
+    def _get_default_element_size(self):
         """
         Returns the default elementSize
 
@@ -13553,7 +13550,7 @@ class Window:
 
         return self.DefaultElementSize
 
-    def _AutoCloseAlarmCallback(self):
+    def _auto_close_alarm_callback(self):
         """
         Function that's called by tkinter when autoclode timer expires.  Closes the window
         """
@@ -13563,13 +13560,13 @@ class Window:
                 if window.NonBlocking:
                     self.Close()
                 else:
-                    window._Close()
+                    window._close()
                     self.TKroot.quit()
                     self.RootNeedsDestroying = True
         except Exception:
             pass
 
-    def _TimeoutAlarmCallback(self):
+    def _timeout_alarm_callback(self):
         """
         Read Timeout Alarm callback. Will kick a mainloop call out of the tkinter event loop and cause it to return
         """
@@ -13636,28 +13633,25 @@ class Window:
             should_submit_window = False
         return should_submit_window
 
-    # @_timeit_summary
-    def read(self, timeout=None, timeout_key=TIMEOUT_KEY, close=False):
+    def read(self, timeout: int = None, timeout_key=TIMEOUT_KEY, close: bool = False):
         """
         THE biggest deal method in the Window class! This is how you get all of your data from your Window.
             Pass in a timeout (in milliseconds) to wait for a maximum of timeout milliseconds. Will return timeout_key
             if no other GUI events happen first.
 
         :param timeout:     Milliseconds to wait until the Read will return IF no other GUI events happen first
-        :type timeout:      (int)
         :param timeout_key: The value that will be returned from the call if the timer expired
         :type timeout_key:  (Any)
         :param close:       if True the window will be closed prior to returning
-        :type close:        (bool)
         :return:            (event, values)
         :rtype:             Tuple[(Any), Dict[Any, Any], List[Any], None]
         """
 
-        if Window._floating_debug_window_build_needed is True:
+        if Window._floating_debug_window_build_needed:
             Window._floating_debug_window_build_needed = False
             _Debugger.debugger._build_floating_window()
 
-        if Window._main_debug_window_build_needed is True:
+        if Window._main_debug_window_build_needed:
             Window._main_debug_window_build_needed = False
             _Debugger.debugger._build_main_debugger_window()
 
@@ -13712,8 +13706,8 @@ class Window:
 
         return results
 
-    # @_timeit
-    def _read(self, timeout=None, timeout_key=TIMEOUT_KEY):
+
+    def _read(self, timeout:int=None, timeout_key=TIMEOUT_KEY):
         """
         THE biggest deal method in the Window class! This is how you get all of your data from your Window.
             Pass in a timeout (in milliseconds) to wait for a maximum of timeout milliseconds. Will return timeout_key
@@ -13738,7 +13732,7 @@ class Window:
 
         timeout = int(timeout) if timeout is not None else None
         if timeout == 0:  # timeout of zero runs the old readnonblocking
-            event, values = self._ReadNonBlocking()
+            event, values = self._read_non_blocking()
             if event is None:
                 event = timeout_key
             if values is None:
@@ -13758,7 +13752,7 @@ class Window:
                 )
             return None, None
         if not self.Shown:
-            self._Show()
+            self._show()
         else:
             # if already have a button waiting, the return previously built results
             if (
@@ -13811,7 +13805,7 @@ class Window:
             # normal read blocking code....
             if timeout is not None:
                 self.TimerCancelled = False
-                self.TKAfterID = self.TKroot.after(timeout, self._TimeoutAlarmCallback)
+                self.TKAfterID = self.TKroot.after(timeout, self._timeout_alarm_callback)
             self.CurrentlyRunningMainloop = True
             Window._window_running_mainloop = self
             try:
@@ -13876,7 +13870,7 @@ class Window:
                 )  # fake a timeout
             return self.ReturnValues
 
-    def _ReadNonBlocking(self):
+    def _read_non_blocking(self):
         """
         Should be NEVER called directly by the user.  The user can call Window.read(timeout=0) to get same effect
 
@@ -13892,7 +13886,7 @@ class Window:
                 # print('DESTROY FAILED')
             return None, None
         if not self.Shown:
-            self._Show(non_blocking=True)
+            self._show(non_blocking=True)
         try:
             rc = self.TKroot.update()
         except Exception:
@@ -13915,7 +13909,7 @@ class Window:
             else self.AutoCloseDuration
         )
         self.TKAfterID = self.TKroot.after(
-            int(duration * 1000), self._AutoCloseAlarmCallback
+            int(duration * 1000), self._auto_close_alarm_callback
         )
 
     def finalize(self):
@@ -13939,16 +13933,7 @@ class Window:
         # add the window to the list of active windows
         Window._active_windows[self] = Window.hidden_master_root
         return self
-        # OLD CODE FOLLOWS
-        if not self.Shown:
-            self._Show(non_blocking=True)
-        try:
-            rc = self.TKroot.update()
-        except Exception:
-            self.TKrootDestroyed = True
-            Window._DecrementOpenCount()
-            print("** Finalize failed **")
-        return self
+
 
     def refresh(self):
         """
@@ -14134,9 +14119,9 @@ class Window:
         Builds a dictionary containing all elements with keys for this window.
         """
         dict_ = {}
-        self.AllKeysDict = self._BuildKeyDictForWindow(self, self, dict_)
+        self.AllKeysDict = self._build_key_dict_for_window(self, self, dict_)
 
-    def _BuildKeyDictForWindow(self, top_window, window, key_dict):
+    def _build_key_dict_for_window(self, top_window, window, key_dict):
         """
         Loop through all Rows and all Container Elements for this window and create the keys for all of them.
         Note that the calls are recursive as all pathes must be walked
@@ -14153,23 +14138,23 @@ class Window:
         for row_num, row in enumerate(window.Rows):
             for col_num, element in enumerate(row):
                 if element.Type == ELEM_TYPE_COLUMN:
-                    key_dict = self._BuildKeyDictForWindow(
+                    key_dict = self._build_key_dict_for_window(
                         top_window, element, key_dict
                     )
                 if element.Type == ELEM_TYPE_FRAME:
-                    key_dict = self._BuildKeyDictForWindow(
+                    key_dict = self._build_key_dict_for_window(
                         top_window, element, key_dict
                     )
                 if element.Type == ELEM_TYPE_TAB_GROUP:
-                    key_dict = self._BuildKeyDictForWindow(
+                    key_dict = self._build_key_dict_for_window(
                         top_window, element, key_dict
                     )
                 if element.Type == ELEM_TYPE_PANE:
-                    key_dict = self._BuildKeyDictForWindow(
+                    key_dict = self._build_key_dict_for_window(
                         top_window, element, key_dict
                     )
                 if element.Type == ELEM_TYPE_TAB:
-                    key_dict = self._BuildKeyDictForWindow(
+                    key_dict = self._build_key_dict_for_window(
                         top_window, element, key_dict
                     )
                 if (
@@ -14405,7 +14390,7 @@ class Window:
                     self.TKroot.attributes("-fullscreen", False)
             self.maximized = False
 
-    def _StartMoveUsingControlKey(self, event):
+    def _start_move_using_control_key(self, event):
         """
         Used by "Grab Anywhere" style windows. This function is bound to mouse-down. It marks the beginning of a drag.
         :param event: event information passed in by tkinter. Contains x,y position of mouse
@@ -14414,7 +14399,7 @@ class Window:
         self._start_move_save_offset(event)
         return
 
-    def _StartMoveGrabAnywhere(self, event):
+    def _start_move_grab_anywhere(self, event):
         """
         Used by "Grab Anywhere" style windows. This function is bound to mouse-down. It marks the beginning of a drag.
         :param event: event information passed in by tkinter. Contains x,y position of mouse
@@ -14428,18 +14413,10 @@ class Window:
             return
         self._start_move_save_offset(event)
 
-    def _StartMove(self, event):
+    def _start_move(self, event):
         self._start_move_save_offset(event)
-        return
 
-    def _StopMove(self, event):
-        """
-        Used by "Grab Anywhere" style windows. This function is bound to mouse-up. It marks the ending of a drag.
-        Sets the position of the window to this final x,y coordinates
-        :param event: event information passed in by tkinter. Contains x,y position of mouse
-        :type event:  (event)
-        """
-        return
+
 
     def _start_move_save_offset(self, event):
         self._mousex = event.x + event.widget.winfo_rootx()
@@ -14463,10 +14440,10 @@ class Window:
                 win._mouse_offset_x = event.x_root - _startx
                 win._mouse_offset_y = event.y_root - _starty
 
-    def _OnMotionUsingControlKey(self, event):
-        self._OnMotion(event)
+    def _on_motion_using_control_key(self, event):
+        self._on_motion(event)
 
-    def _OnMotionGrabAnywhere(self, event):
+    def _on_motion_grab_anywhere(self, event):
         """
         Used by "Grab Anywhere" style windows. This function is bound to mouse motion. It actually moves the window
         :param event: event information passed in by tkinter. Contains x,y position of mouse
@@ -14479,9 +14456,9 @@ class Window:
             # print('Found widget to ignore in grab anywhere...')
             return
 
-        self._OnMotion(event)
+        self._on_motion(event)
 
-    def _OnMotion(self, event):
+    def _on_motion(self, event):
         self.TKroot.geometry(
             f"+{event.x_root - self._mouse_offset_x}+{event.y_root - self._mouse_offset_y}"
         )
@@ -14533,8 +14510,7 @@ class Window:
         elif event.keysym == "Right":
             self.move(x + 1, y)
 
-
-    def _KeyboardCallback(self, event):
+    def _keyboard_callback(self, event):
         """
         Window keyboard callback. Called by tkinter.  Will kick user out of the tkinter event loop. Should only be
         called if user has requested window level keyboard events
@@ -14552,7 +14528,7 @@ class Window:
         #     _BuildResults(self, False, self)
         _exit_mainloop(self)
 
-    def _MouseWheelCallback(self, event):
+    def _mouse_wheel_callback(self, event):
         """
         Called by tkinter when a mouse wheel event has happened. Only called if keyboard events for the window
         have been enabled
@@ -14569,7 +14545,7 @@ class Window:
         #     _BuildResults(self, False, self)
         _exit_mainloop(self)
 
-    def _Close(self, without_event=False):
+    def _close(self, without_event=False):
         """
         The internal close call that does the real work of building. This method basically sets up for closing
         but doesn't destroy the window like the User's version of Close does
@@ -14654,7 +14630,7 @@ class Window:
         return False
 
     # IT FINALLY WORKED! 29-Oct-2018 was the first time this damned thing got called
-    def _OnClosingCallback(self):
+    def _on_closing_callback(self):
         """
         Internally used method ONLY. Not sure callable.  tkinter calls this when the window is closed by clicking X
         """
@@ -14850,7 +14826,7 @@ class Window:
                 UserWarning,
             )
 
-    def current_location(self, more_accurate:bool=False, without_titlebar:bool=False):
+    def current_location(self, more_accurate: bool = False, without_titlebar: bool = False):
         """
         Get the current location of the window's top left corner.
         Sometimes, depending on the environment, the value returned does not include the titlebar,etc
@@ -15034,9 +15010,9 @@ class Window:
         """
         if not self._is_window_created("tried Window.grab_any_where_on"):
             return
-        self.TKroot.bind("<ButtonPress-1>", self._StartMoveGrabAnywhere)
+        self.TKroot.bind("<ButtonPress-1>", self._start_move_grab_anywhere)
         self.TKroot.bind("<ButtonRelease-1>", self._StopMove)
-        self.TKroot.bind("<B1-Motion>", self._OnMotionGrabAnywhere)
+        self.TKroot.bind("<B1-Motion>", self._on_motion_grab_anywhere)
 
     def grab_any_where_off(self):
         """
@@ -15317,7 +15293,7 @@ class Window:
         # self.thread_lock.release()
         return qsize != 0
 
-    def _RightClickMenuCallback(self, event):
+    def _right_click_menu_callback(self, event):
         """
         When a right click menu is specified for an entire window, then this callback catches right clicks
         that happen to the window itself, when there are no elements that are in that area.
@@ -15549,7 +15525,7 @@ class Window:
                     self.maximize()
         elif key == TITLEBAR_CLOSE_KEY:
             if not self.DisableClose:
-                self._OnClosingCallback()
+                self._on_closing_callback()
 
     def timer_start(self, frequency_ms, key=EVENT_TIMER, repeating=True):
         """
@@ -15802,7 +15778,7 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
 
     if timeout == 0:
         window = list(Window._active_windows.keys())[Window._timeout_0_counter]
-        event, values = window._ReadNonBlocking()
+        event, values = window._read_non_blocking()
         if event is None:
             event = timeout_key
         if values is None:
@@ -19737,9 +19713,9 @@ def _add_right_click_menu(element, toplevel_form):
         AddMenuItem(top_menu, menu[1], element, right_click_menu=True)
         element.TKRightClickMenu = top_menu
         if running_mac():
-            element.Widget.bind("<ButtonRelease-2>", element._RightClickMenuCallback)
+            element.Widget.bind("<ButtonRelease-2>", element._right_click_menu_callback)
         else:
-            element.Widget.bind("<ButtonRelease-3>", element._RightClickMenuCallback)
+            element.Widget.bind("<ButtonRelease-3>", element._right_click_menu_callback)
 
 
 def _change_ttk_theme(style, theme_name):
@@ -19915,7 +19891,7 @@ def _make_ttk_scrollbar(element, orientation, window):
 
 
 # @_timeit
-def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
+def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Window:
     """
 
     :param form:             a window class
@@ -19993,30 +19969,30 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                 # if something already about to the button, then don't do the grab stuff
                 if "<Button-1>" not in element.Widget.bind():
                     element.Widget.bind(
-                        "<ButtonPress-1>", toplevel_form._StartMoveGrabAnywhere
+                        "<ButtonPress-1>", toplevel_form._start_move_grab_anywhere
                     )
                     element.Widget.bind("<ButtonRelease-1>", toplevel_form._StopMove)
                     element.Widget.bind(
-                        "<B1-Motion>", toplevel_form._OnMotionGrabAnywhere
+                        "<B1-Motion>", toplevel_form._on_motion_grab_anywhere
                     )
                 element.ParentRowFrame.bind(
-                    "<ButtonPress-1>", toplevel_form._StartMoveGrabAnywhere
+                    "<ButtonPress-1>", toplevel_form._start_move_grab_anywhere
                 )
                 element.ParentRowFrame.bind(
                     "<ButtonRelease-1>", toplevel_form._StopMove
                 )
                 element.ParentRowFrame.bind(
-                    "<B1-Motion>", toplevel_form._OnMotionGrabAnywhere
+                    "<B1-Motion>", toplevel_form._on_motion_grab_anywhere
                 )
                 if element.Type == ELEM_TYPE_COLUMN:
                     element.TKColFrame.canvas.bind(
-                        "<ButtonPress-1>", toplevel_form._StartMoveGrabAnywhere
+                        "<ButtonPress-1>", toplevel_form._start_move_grab_anywhere
                     )
                     element.TKColFrame.canvas.bind(
                         "<ButtonRelease-1>", toplevel_form._StopMove
                     )
                     element.TKColFrame.canvas.bind(
-                        "<B1-Motion>", toplevel_form._OnMotionGrabAnywhere
+                        "<B1-Motion>", toplevel_form._on_motion_grab_anywhere
                     )
         except Exception:
             pass
@@ -20086,24 +20062,24 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                     toplevel_form.TKRightClickMenu = top_menu
                     if running_mac():
                         toplevel_form.TKroot.bind(
-                            "<ButtonRelease-2>", toplevel_form._RightClickMenuCallback
+                            "<ButtonRelease-2>", toplevel_form._right_click_menu_callback
                         )
                     else:
                         toplevel_form.TKroot.bind(
-                            "<ButtonRelease-3>", toplevel_form._RightClickMenuCallback
+                            "<ButtonRelease-3>", toplevel_form._right_click_menu_callback
                         )
             if running_mac():
                 element.Widget.bind(
-                    "<ButtonRelease-2>", element._RightClickMenuCallback
+                    "<ButtonRelease-2>", element._right_click_menu_callback
                 )
             else:
                 element.Widget.bind(
-                    "<ButtonRelease-3>", element._RightClickMenuCallback
+                    "<ButtonRelease-3>", element._right_click_menu_callback
                 )
                 try:
                     if element.Type == ELEM_TYPE_COLUMN:
                         element.TKColFrame.canvas.bind(
-                            "<ButtonRelease-3>", element._RightClickMenuCallback
+                            "<ButtonRelease-3>", element._right_click_menu_callback
                         )
                 except Exception:
                     pass
@@ -20224,7 +20200,7 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                     element.Widget = element.TKColFrame = TkScrollableFrame(
                         tk_row_frame, element.VerticalScrollOnly, element, toplevel_form
                     )  # do not use yet!  not working
-                    PackFormIntoFrame(
+                    pack_form_into_frame(
                         element, element.TKColFrame.TKFrame, toplevel_form
                     )
                     element.TKColFrame.TKFrame.update()
@@ -20271,7 +20247,7 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                 else:
                     if element.Size != (None, None):
                         element.Widget = element.TKColFrame = TkFixedFrame(tk_row_frame)
-                        PackFormIntoFrame(
+                        pack_form_into_frame(
                             element, element.TKColFrame.TKFrame, toplevel_form
                         )
                         element.TKColFrame.TKFrame.update()
@@ -20294,7 +20270,7 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                             )
                     else:
                         element.Widget = element.TKColFrame = tk.Frame(tk_row_frame)
-                        PackFormIntoFrame(element, element.TKColFrame, toplevel_form)
+                        pack_form_into_frame(element, element.TKColFrame, toplevel_form)
                         if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                             element.TKColFrame.config(
                                 background=element.BackgroundColor,
@@ -20394,7 +20370,7 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                 for pane in element.PaneList:
                     pane.Widget = pane.TKColFrame = tk.Frame(element.PanedWindow)
                     pane.ParentPanedWindow = element.PanedWindow
-                    PackFormIntoFrame(pane, pane.TKColFrame, toplevel_form)
+                    pack_form_into_frame(pane, pane.TKColFrame, toplevel_form)
                     if pane.visible:
                         element.PanedWindow.add(pane.TKColFrame)
                     if (
@@ -22164,7 +22140,7 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                     tk_row_frame, text=element.Title, relief=element.Relief
                 )
                 element.TKFrame = labeled_frame
-                PackFormIntoFrame(element, labeled_frame, toplevel_form)
+                pack_form_into_frame(element, labeled_frame, toplevel_form)
                 expand, fill, row_should_expand, row_fill_direction = _add_expansion(
                     element, row_should_expand, row_fill_direction
                 )
@@ -22232,7 +22208,7 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                 element = element  # type: Tab
                 form = form  # type: TabGroup
                 element.TKFrame = element.Widget = tk.Frame(form.TKNotebook)
-                PackFormIntoFrame(element, element.TKFrame, toplevel_form)
+                pack_form_into_frame(element, element.TKFrame, toplevel_form)
                 state = "normal"
                 if element.Disabled:
                     state = "disabled"
@@ -22403,7 +22379,7 @@ def PackFormIntoFrame(form: Window, containing_frame, toplevel_form) -> Window:
                     tk_row_frame, style=custom_style
                 )
 
-                PackFormIntoFrame(element, toplevel_form.TKroot, toplevel_form)
+                pack_form_into_frame(element, toplevel_form.TKroot, toplevel_form)
 
                 expand, fill, row_should_expand, row_fill_direction = _add_expansion(
                     element, row_should_expand, row_fill_direction
@@ -23420,7 +23396,7 @@ def _convert_window_to_tk(window):
     master.title(window.Title)
     InitializeResults(window)
 
-    PackFormIntoFrame(window, master, window)
+    pack_form_into_frame(window, master, window)
 
     window.TKroot.configure(padx=window.Margins[0], pady=window.Margins[1])
 
@@ -23568,15 +23544,15 @@ def StartupTK(window):
                 and running_mac()
                 and not window.NoTitleBar
         ):
-            root.bind("<ButtonPress-1>", window._StartMoveGrabAnywhere)
+            root.bind("<ButtonPress-1>", window._start_move_grab_anywhere)
             root.bind("<ButtonRelease-1>", window._StopMove)
-            root.bind("<B1-Motion>", window._OnMotionGrabAnywhere)
+            root.bind("<B1-Motion>", window._on_motion_grab_anywhere)
     if window.GrabAnywhereUsingControlKey is not False and not (
             window.NonBlocking and window.GrabAnywhereUsingControlKey is not True
     ):
-        root.bind("<Control-Button-1>", window._StartMoveUsingControlKey)
+        root.bind("<Control-Button-1>", window._start_move_using_control_key)
         root.bind("<Control-ButtonRelease-1>", window._StopMove)
-        root.bind("<Control-B1-Motion>", window._OnMotionUsingControlKey)
+        root.bind("<Control-B1-Motion>", window._on_motion_using_control_key)
         # also enable movement using Control + Arrow key
         root.bind("<Control-Left>", window._move_callback)
         root.bind("<Control-Right>", window._move_callback)
@@ -23597,15 +23573,15 @@ def StartupTK(window):
         # pass
 
     if window.ReturnKeyboardEvents and not window.NonBlocking:
-        root.bind("<KeyRelease>", window._KeyboardCallback)
-        root.bind("<MouseWheel>", window._MouseWheelCallback)
-        root.bind("<Button-4>", window._MouseWheelCallback)
-        root.bind("<Button-5>", window._MouseWheelCallback)
+        root.bind("<KeyRelease>", window._keyboard_callback)
+        root.bind("<MouseWheel>", window._mouse_wheel_callback)
+        root.bind("<Button-4>", window._mouse_wheel_callback)
+        root.bind("<Button-5>", window._mouse_wheel_callback)
     elif window.ReturnKeyboardEvents:
-        root.bind("<Key>", window._KeyboardCallback)
-        root.bind("<MouseWheel>", window._MouseWheelCallback)
-        root.bind("<Button-4>", window._MouseWheelCallback)
-        root.bind("<Button-5>", window._MouseWheelCallback)
+        root.bind("<Key>", window._keyboard_callback)
+        root.bind("<MouseWheel>", window._mouse_wheel_callback)
+        root.bind("<Button-4>", window._mouse_wheel_callback)
+        root.bind("<Button-5>", window._mouse_wheel_callback)
 
     DEFAULT_WINDOW_SNAPSHOT_KEY_CODE = main_global_get_screen_snapshot_symcode()
 
@@ -23629,16 +23605,16 @@ def StartupTK(window):
             # window.TKAfterID = root.after(int(duration * 1000), window._AutoCloseAlarmCallback)
 
     if window.Timeout is not None:
-        window.TKAfterID = root.after(int(window.Timeout), window._TimeoutAlarmCallback)
+        window.TKAfterID = root.after(int(window.Timeout), window._timeout_alarm_callback)
     if window.NonBlocking:
-        window.TKroot.protocol("WM_DESTROY_WINDOW", window._OnClosingCallback)
-        window.TKroot.protocol("WM_DELETE_WINDOW", window._OnClosingCallback)
+        window.TKroot.protocol("WM_DESTROY_WINDOW", window._on_closing_callback)
+        window.TKroot.protocol("WM_DELETE_WINDOW", window._on_closing_callback)
 
     else:  # it's a blocking form
         # print('..... CALLING MainLoop')
         window.CurrentlyRunningMainloop = True
-        window.TKroot.protocol("WM_DESTROY_WINDOW", window._OnClosingCallback)
-        window.TKroot.protocol("WM_DELETE_WINDOW", window._OnClosingCallback)
+        window.TKroot.protocol("WM_DESTROY_WINDOW", window._on_closing_callback)
+        window.TKroot.protocol("WM_DELETE_WINDOW", window._on_closing_callback)
 
         if window.modal or DEFAULT_MODAL_WINDOWS_FORCED:
             window.make_modal()
