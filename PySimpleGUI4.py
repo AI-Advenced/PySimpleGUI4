@@ -1,29 +1,27 @@
 #!/usr/bin/python3
 # all of the tkinter involved imports
+import calendar
+import copy
+import datetime
+import difflib
+import inspect
+import pickle
+import pprint
+import socket
+import textwrap
+import time
 import tkinter as tk
 
-# import tkinter.scrolledtext as tkst
 import tkinter.font
-from tkinter import ttk
-
-import time
-import pickle
-import calendar
-import datetime
-import textwrap
-
-import socket
-import inspect
 import traceback
-import difflib
-import copy
-import pprint
+from tkinter import ttk
 
 try:  # Because Raspberry Pi is still on 3.4....it's not critical if this module isn't imported on the Pi
     from typing import (
         List,
         Any,
-        Union, Tuple
+        Union,
+        Tuple,
     )  # because this code has to run on 2.7 can't use real type hints.  Must do typing only in comments
 except ImportError:
     print(
@@ -38,21 +36,13 @@ from functools import wraps
 try:  # Because Raspberry Pi is still on 3.4....
     import subprocess
 except ImportError as e:
-    print("** Import error {} **".format(e))
+    print("** Import error:{} **".format(e))
 
 import threading
 import itertools
 import json
 import configparser
 import queue
-
-try:
-    import webbrowser
-
-    webbrowser_available = True
-except ImportError:
-    webbrowser_available = False
-
 import pydoc
 import os
 import sys
@@ -209,9 +199,7 @@ def formatted_datetime_now():
 def running_linux() -> bool:
     """
     Determines the OS is Linux by using sys.platform
-
     Returns True if Linux
-
     :return: True if sys.platform indicates running Linux
     """
     return sys.platform.startswith("linux")
@@ -220,11 +208,8 @@ def running_linux() -> bool:
 def running_mac() -> bool:
     """
     Determines the OS is Mac by using sys.platform
-
     Returns True if Mac
-
     :return: True if sys.platform indicates running Mac
-    :rtype:  (bool)
     """
     return sys.platform.startswith("darwin")
 
@@ -232,11 +217,8 @@ def running_mac() -> bool:
 def running_windows() -> bool:
     """
     Determines the OS is Windows by using sys.platform
-
     Returns True if Windows
-
     :return: True if sys.platform indicates running Windows
-    :rtype:  (bool)
     """
     return sys.platform.startswith("win")
 
@@ -245,11 +227,9 @@ def running_trinket() -> bool:
     """
     A special case for Trinket.  Checks both the OS and the number of environment variables
     Currently, Trinket only has ONE environment variable.  This fact is used to figure out if Trinket is being used.
-
     Returns True if "Trinket" (in theory)
 
     :return: True if sys.platform indicates Linux and the number of environment variables is 1
-    :rtype:  (bool)
     """
     if sys.platform.startswith("linux") and socket.gethostname().startswith("pygame-"):
         return True
@@ -260,11 +240,9 @@ def running_replit() -> bool:
     """
     A special case for REPLIT.  Checks both the OS and for the existance of the number of environment variable REPL_OWNER
     Currently, Trinket only has ONE environment variable.  This fact is used to figure out if Trinket is being used.
-
     Returns True if running on "replit"
 
     :return: True if sys.platform indicates Linux and setting REPL_OWNER is found in the environment variables
-    :rtype:  (bool)
     """
     if "REPL_OWNER" in os.environ and sys.platform.startswith("linux"):
         return True
@@ -1967,6 +1945,7 @@ class Element:
 
         self.Pad = pad
         self.Font = font
+        self.DisplayText = ""
 
         self.TKStringVar = None
         self.TKIntVar = None
@@ -1977,7 +1956,7 @@ class Element:
         self.ttk_style = None  # The ttk Style object (if this is a ttk widget)
         self._metadata = None  # type: Any
 
-        self.ParentForm = None  # type: Window
+        self.ParentForm = None  ## type: Window
         self.ParentContainer = None  # will be a Form, Column, or Frame element # UNBIND
         self.TextInputDefault = None
         self.Position = (0, 0)  # Default position Row 0, Col 0
@@ -2032,8 +2011,6 @@ class Element:
             PSG_THEME_PART_SLIDER: theme_slider_color,
         }
 
-        # class Theme_Parts():
-        #     PSG_THEME_PART_FUNC_MAP = {PSG_THEME_PART_BACKGROUND: theme_background_color,
         if sbar_trough_color is not None:
             self.scroll_trough_color = sbar_trough_color
         else:
@@ -2147,7 +2124,7 @@ class Element:
         """
         return self.Widget
 
-    def _RightClickMenuCallback(self, event):
+    def _right_click_menu_callback(self, event):
         """
         Callback function that's called when a right click happens. Shows right click menu as result
 
@@ -2167,13 +2144,19 @@ class Element:
                     return
                 tab_element.TKRightClickMenu.tk_popup(event.x_root, event.y_root, 0)
                 self.TKRightClickMenu.grab_release()
-            except Exception:
-                pass
+            except Exception as e:
+                print(e)
             return
         self.TKRightClickMenu.tk_popup(event.x_root, event.y_root, 0)
         self.TKRightClickMenu.grab_release()
         if self.Type == ELEM_TYPE_GRAPH:
             self._update_position_for_returned_values(event)
+
+    def find_key_from_tab_name(self, tab_name):
+        pass
+
+    def _update_position_for_returned_values(self, event):
+        pass
 
     def _tearoff_menu_callback(self, parent, menu):
         """
@@ -2196,7 +2179,7 @@ class Element:
             "wm", "geometry", menu, "+{}+{}".format(winx, winy)
         )
 
-    def _MenuItemChosenCallback(self, item_chosen):  # TEXT Menu item callback
+    def _menu_item_chosen_callback(self, item_chosen):  # TEXT Menu item callback
         """
         Callback function called when user chooses a menu item from menubar, Button Menu or right click menu
 
@@ -2209,10 +2192,8 @@ class Element:
         self.ParentForm.LastButtonClicked = self.MenuItemChosen
         self.ParentForm.FormRemainedOpen = True
         _exit_mainloop(self.ParentForm)
-        # Window._window_that_exited = self.ParentForm
-        # self.ParentForm.TKroot.quit()  # kick the users out of the mainloop
 
-    def _FindReturnKeyBoundButton(self, form):
+    def _find_return_key_bound_button(self, form):
         """
         Searches for which Button has the flag Button.BindReturnKey set.  It is called recursively when a
         "Container Element" is encountered. Func has to walk entire window including these "sub-forms"
@@ -2228,28 +2209,28 @@ class Element:
                     if element.BindReturnKey:
                         return element
                 if element.Type == ELEM_TYPE_COLUMN:
-                    rc = self._FindReturnKeyBoundButton(element)
+                    rc = self._find_return_key_bound_button(element)
                     if rc is not None:
                         return rc
                 if element.Type == ELEM_TYPE_FRAME:
-                    rc = self._FindReturnKeyBoundButton(element)
+                    rc = self._find_return_key_bound_button(element)
                     if rc is not None:
                         return rc
                 if element.Type == ELEM_TYPE_TAB_GROUP:
-                    rc = self._FindReturnKeyBoundButton(element)
+                    rc = self._find_return_key_bound_button(element)
                     if rc is not None:
                         return rc
                 if element.Type == ELEM_TYPE_TAB:
-                    rc = self._FindReturnKeyBoundButton(element)
+                    rc = self._find_return_key_bound_button(element)
                     if rc is not None:
                         return rc
                 if element.Type == ELEM_TYPE_PANE:
-                    rc = self._FindReturnKeyBoundButton(element)
+                    rc = self._find_return_key_bound_button(element)
                     if rc is not None:
                         return rc
         return None
 
-    def _TextClickedHandler(self, event):
+    def _text_clicked_handler(self, event):
         """
         Callback that's called when a text element is clicked on with events enabled on the Text Element.
         Result is that control is returned back to user (quits mainloop).
@@ -2268,7 +2249,7 @@ class Element:
         self._generic_callback_handler(self.DisplayText)
         return
 
-    def _ReturnKeyHandler(self, event):
+    def _return_key_handler(self, event):
         """
         Internal callback for the ENTER / RETURN key. Results in calling the ButtonCallBack for element that has the return key bound to it, just as if button was clicked.
 
@@ -2281,7 +2262,7 @@ class Element:
             return
 
         MyForm = self.ParentForm
-        button_element = self._FindReturnKeyBoundButton(MyForm)
+        button_element = self._find_return_key_bound_button(MyForm)
         if button_element is not None:
             # if the Button has been disabled, then don't perform the callback
             if button_element.Disabled:
@@ -2293,10 +2274,7 @@ class Element:
         Peforms the actions that were in many of the callback functions previously.  Combined so that it's
         easier to modify and is in 1 place now
 
-        :param event:            From tkinter and is not used
-        :type event:             Any
-        :param alternate_to_key: If key is None, then use this value instead
-        :type alternate_to_key:  Any
+        :param alternative_to_key: If key is None, then use this value instead
         """
         if force_key_to_be is not None:
             self.ParentForm.LastButtonClicked = force_key_to_be
@@ -2754,14 +2732,14 @@ class Element:
         Excludes this element from being used by the grab_anywhere feature
         Handy for elements like a Graph element when dragging is enabled. You want the Graph element to get the drag events instead of the window dragging.
         """
-        self.ParentForm._grab_anywhere_ignore_these_list.append(self.Widget)
+        self.ParentForm.grab_anywhere_ignore_these_list.append(self.Widget)
 
     def grab_anywhere_include(self):
         """
         Includes this element in the grab_anywhere feature
         This will allow you to make a Multline element drag a window for example
         """
-        self.ParentForm._grab_anywhere_include_these_list.append(self.Widget)
+        self.ParentForm.grab_anywhere_include_these_list.append(self.Widget)
 
     def set_right_click_menu(self, menu=None):
         """
@@ -2830,16 +2808,18 @@ class Element:
                     self.ParentForm.TKRightClickMenu = top_menu
                     if running_mac():
                         self.ParentForm.TKroot.bind(
-                            "<ButtonRelease-2>", self.ParentForm._right_click_menu_callback
+                            "<ButtonRelease-2>",
+                            self.ParentForm._right_click_menu_callback,
                         )
                     else:
                         self.ParentForm.TKroot.bind(
-                            "<ButtonRelease-3>", self.ParentForm._right_click_menu_callback
+                            "<ButtonRelease-3>",
+                            self.ParentForm._right_click_menu_callback,
                         )
             if running_mac():
-                self.Widget.bind("<ButtonRelease-2>", self._RightClickMenuCallback)
+                self.Widget.bind("<ButtonRelease-2>", self._right_click_menu_callback)
             else:
-                self.Widget.bind("<ButtonRelease-3>", self._RightClickMenuCallback)
+                self.Widget.bind("<ButtonRelease-3>", self._right_click_menu_callback)
 
     def save_element_screenshot_to_disk(self, filename: str = None):
         """
@@ -3601,6 +3581,10 @@ class Combo(Element):
 
     Get = get
     Update = update
+
+    @property
+    def dropdown_newfont(self):
+        return self._dropdown_newfont
 
 
 # -------------------------  INPUT COMBO Element lazy functions  ------------------------- #
@@ -5508,18 +5492,18 @@ class Multiline(Element):
         Sends stdout (prints) to this element
         """
         # if nothing on the stack, then need to save the very first stdout
-        if len(Window._rerouted_stdout_stack) == 0:
+        if len(Window.rerouted_stdout_stack) == 0:
             Window._original_stdout = sys.stdout
-        Window._rerouted_stdout_stack.insert(0, (self.ParentForm, self))
+        Window.rerouted_stdout_stack.insert(0, (self.ParentForm, self))
         sys.stdout = self
 
     def reroute_stderr_to_here(self):
         """
         Sends stderr to this element
         """
-        if len(Window._rerouted_stderr_stack) == 0:
+        if len(Window.rerouted_stderr_stack) == 0:
             Window._original_stderr = sys.stderr
-        Window._rerouted_stderr_stack.insert(0, (self.ParentForm, self))
+        Window.rerouted_stderr_stack.insert(0, (self.ParentForm, self))
         sys.stderr = self
 
     def restore_stdout(self):
@@ -6804,7 +6788,9 @@ class Button(Element):
                 if not isinstance(target, str):
                     if target[0] < 0:
                         target = [self.Position[0] + target[0], target[1]]
-                    target_element = self.ParentContainer._get_element_at_location(target)
+                    target_element = self.ParentContainer._get_element_at_location(
+                        target
+                    )
                 else:
                     target_element = self.ParentForm.find_element(target)
             try:
@@ -7386,7 +7372,7 @@ class ButtonMenu(Element):
         )
         self.Tearoff = tearoff
 
-    def _MenuItemChosenCallback(
+    def _menu_item_chosen_callback(
             self, item_chosen
     ):  # ButtonMenu Menu Item Chosen Callback
         """
@@ -8242,6 +8228,10 @@ class Canvas(Element):
 
     TKCanvas = tk_canvas
 
+    @property
+    def TKCanvas(self):
+        return self._TKCanvas
+
 
 # ---------------------------------------------------------------------- #
 #                           Graph                                        #
@@ -8682,12 +8672,11 @@ class Graph(Element):
             print(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
             return None
         if line_width is None:
             line_width = 1
         try:  # in case closed with X
-            id = self._TKCanvas2.create_rectangle(
+            id_ = self._TKCanvas2.create_rectangle(
                 converted_top_left[0],
                 converted_top_left[1],
                 converted_bottom_right[0],
@@ -8697,8 +8686,8 @@ class Graph(Element):
                 width=line_width,
             )
         except Exception:
-            id = None
-        return id
+            id_ = None
+        return id_
 
     def draw_polygon(self, points, fill_color=None, line_color=None, line_width=None):
         """
@@ -8726,12 +8715,12 @@ class Graph(Element):
             print("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case closed with X
-            id = self._TKCanvas2.create_polygon(
+            id_ = self._TKCanvas2.create_polygon(
                 converted_points, fill=fill_color, outline=line_color, width=line_width
             )
         except Exception:
-            id = None
-        return id
+            id_ = None
+        return id_
 
     def draw_text(
             self,
@@ -8768,10 +8757,9 @@ class Graph(Element):
             print(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case closed with X
-            id = self._TKCanvas2.create_text(
+            id_ = self._TKCanvas2.create_text(
                 converted_point[0],
                 converted_point[1],
                 text=text,
@@ -8781,8 +8769,8 @@ class Graph(Element):
                 anchor=text_location,
             )
         except Exception:
-            id = None
-        return id
+            id_ = None
+        return id_
 
     def draw_image(self, filename=None, data=None, location=(None, None)):
         """
@@ -8815,13 +8803,13 @@ class Graph(Element):
             print("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case closed with X
-            id = self._TKCanvas2.create_image(
+            id_ = self._TKCanvas2.create_image(
                 converted_point, image=image, anchor=tk.NW
             )
-            self.Images[id] = image
+            self.Images[id_] = image
         except Exception:
-            id = None
-        return id
+            id_ = None
+        return id_
 
     def erase(self):
         """
@@ -8839,20 +8827,20 @@ class Graph(Element):
         except Exception:
             pass
 
-    def delete_figure(self, id):
+    def delete_figure(self, id_):
         """
         Remove from the Graph the figure represented by id. The id is given to you anytime you call a drawing primitive
 
-        :param id: the id returned to you when calling one of the drawing methods
-        :type id:  (int)
+        :param id_: the id returned to you when calling one of the drawing methods
+        :type id_:  (int)
         """
         try:
-            self._TKCanvas2.delete(id)
+            self._TKCanvas2.delete(id_)
         except Exception:
-            print("DeleteFigure - bad ID {}".format(id))
+            print("DeleteFigure - bad ID {}".format(id_))
         try:
             del self.Images[
-                id
+                id_
             ]  # in case was an image. If wasn't an image, then will get exception
         except Exception:
             pass
@@ -9171,6 +9159,10 @@ class Graph(Element):
     SendFigureToBack = send_figure_to_back
     TKCanvas = tk_canvas
     Update = update
+
+    @property
+    def TKCanvas2(self):
+        return self._TKCanvas2
 
 
 G = Graph
@@ -11471,7 +11463,7 @@ class Menu(Element):
 
         return
 
-    def _MenuItemChosenCallback(self, item_chosen):  # Menu Menu Item Chosen Callback
+    def _menu_item_chosen_callback(self, item_chosen):  # Menu Menu Item Chosen Callback
         """
         Not user callable.  Called when some end-point on the menu (an item) has been clicked.  Send the information back to the application as an event.  Before event can be sent
 
@@ -13435,7 +13427,9 @@ class Window:
             frame = container.Widget
         pack_form_into_frame(column, frame, self)
         self.AddRow(column)
-        self.AllKeysDict = self._build_key_dict_for_window(self, column, self.AllKeysDict)
+        self.AllKeysDict = self._build_key_dict_for_window(
+            self, column, self.AllKeysDict
+        )
         return self
 
     def _show(self, non_blocking: bool = False):
@@ -13478,7 +13472,7 @@ class Window:
         StartupTK(self)
         # If a button or keyboard event happened but no results have been built, build the results
         if self.LastKeyboardEvent is not None or self.LastButtonClicked is not None:
-            return _BuildResults(self, False, self)
+            return _build_results(self, False, self)
         return self.ReturnValues
 
     # ------------------------- SetIcon - set the window's fav icon ------------------------- #
@@ -13628,7 +13622,7 @@ class Window:
             elem.TKStringVar.set(date_string)
             if should_submit_window:
                 self.LastButtonClicked = target_element.Key
-                results = _BuildResults(self, False, self)
+                results = _build_results(self, False, self)
         else:
             should_submit_window = False
         return should_submit_window
@@ -13706,8 +13700,7 @@ class Window:
 
         return results
 
-
-    def _read(self, timeout:int=None, timeout_key=TIMEOUT_KEY):
+    def _read(self, timeout: int = None, timeout_key=TIMEOUT_KEY):
         """
         THE biggest deal method in the Window class! This is how you get all of your data from your Window.
             Pass in a timeout (in milliseconds) to wait for a maximum of timeout milliseconds. Will return timeout_key
@@ -13723,7 +13716,7 @@ class Window:
 
         # if there are events in the thread event queue, then return those events before doing anything else.
         if self._queued_thread_event_available():
-            self.ReturnValues = results = _BuildResults(self, False, self)
+            self.ReturnValues = results = _build_results(self, False, self)
             return results
 
         if self.finalize_in_progress and self.auto_close_timer_needs_starting:
@@ -13759,13 +13752,13 @@ class Window:
                     self.LastButtonClicked is not None
                     and not self.LastButtonClickedWasRealtime
             ):
-                results = _BuildResults(self, False, self)
+                results = _build_results(self, False, self)
                 self.LastButtonClicked = None
                 return results
-            InitializeResults(self)
+            initialize_results(self)
 
             if self._queued_thread_event_available():
-                self.ReturnValues = results = _BuildResults(self, False, self)
+                self.ReturnValues = results = _build_results(self, False, self)
                 return results
 
             # if the last button clicked was realtime, emulate a read non-blocking
@@ -13788,7 +13781,7 @@ class Window:
                 except Exception:
                     self.TKrootDestroyed = True
                     Window._DecrementOpenCount()
-                results = _BuildResults(self, False, self)
+                results = _build_results(self, False, self)
                 if results[0] is not None and results[0] != timeout_key:
                     return results
 
@@ -13805,7 +13798,9 @@ class Window:
             # normal read blocking code....
             if timeout is not None:
                 self.TimerCancelled = False
-                self.TKAfterID = self.TKroot.after(timeout, self._timeout_alarm_callback)
+                self.TKAfterID = self.TKroot.after(
+                    timeout, self._timeout_alarm_callback
+                )
             self.CurrentlyRunningMainloop = True
             Window._window_running_mainloop = self
             try:
@@ -13842,13 +13837,13 @@ class Window:
                 # _my_windows.Decrement()
         # Determine return values
         if self.LastKeyboardEvent is not None or self.LastButtonClicked is not None:
-            results = _BuildResults(self, False, self)
+            results = _build_results(self, False, self)
             if not self.LastButtonClickedWasRealtime:
                 self.LastButtonClicked = None
             return results
         else:
             if self._queued_thread_event_available():
-                self.ReturnValues = results = _BuildResults(self, False, self)
+                self.ReturnValues = results = _build_results(self, False, self)
                 return results
             if (
                     not self.XFound
@@ -13900,7 +13895,7 @@ class Window:
             self.Values = None
             self.LastButtonClicked = None
             return None, None
-        return _BuildResults(self, False, self)
+        return _build_results(self, False, self)
 
     def _start_autoclose_timer(self):
         duration = (
@@ -13933,7 +13928,6 @@ class Window:
         # add the window to the list of active windows
         Window._active_windows[self] = Window.hidden_master_root
         return self
-
 
     def refresh(self):
         """
@@ -14274,7 +14268,7 @@ class Window:
         :type filename:  str
         """
         try:
-            event, values = _BuildResults(self, False, self)
+            event, values = _build_results(self, False, self)
             remove_these = []
             for key in values:
                 if self.Element(key).Type == ELEM_TYPE_BUTTON:
@@ -14415,8 +14409,6 @@ class Window:
 
     def _start_move(self, event):
         self._start_move_save_offset(event)
-
-
 
     def _start_move_save_offset(self, event):
         self._mousex = event.x + event.widget.winfo_rootx()
@@ -14560,7 +14552,7 @@ class Window:
             pass
 
         if not self.NonBlocking or not without_event:
-            _BuildResults(self, False, self)
+            _build_results(self, False, self)
         if self.TKrootDestroyed:
             return
         self.TKrootDestroyed = True
@@ -14826,7 +14818,9 @@ class Window:
                 UserWarning,
             )
 
-    def current_location(self, more_accurate: bool = False, without_titlebar: bool = False):
+    def current_location(
+            self, more_accurate: bool = False, without_titlebar: bool = False
+    ):
         """
         Get the current location of the window's top left corner.
         Sometimes, depending on the environment, the value returned does not include the titlebar,etc
@@ -15494,14 +15488,8 @@ class Window:
     def _custom_titlebar_minimize(self):
         if running_linux():
             self.TKroot.wm_attributes("-type", "normal")
-            # self.ParentForm.TKroot.state('icon')
-            # return
-            # self.ParentForm.maximize()
             self.TKroot.wm_overrideredirect(False)
-            # self.ParentForm.minimize()
-            # self.ParentForm.TKroot.wm_overrideredirect(False)
             self.TKroot.iconify()
-            # self._skip_first_restore_callback = True
             self.TKroot.bind("<Button-1>", self._custom_titlebar_restore_callback)
         else:
             self.TKroot.wm_overrideredirect(False)
@@ -15624,7 +15612,7 @@ class Window:
         """
         return self.read(*args, **kwargs)
 
-    def _is_window_created(self, additional_message=""):
+    def _is_window_created(self, additional_message: str = ""):
         msg = str(additional_message)
         if self.TKroot is None:
             warnings.warn(
@@ -15653,51 +15641,13 @@ class Window:
                 return True
         return False
 
-    AddRow = add_row
-    AddRows = add_rows
-    AlphaChannel = alpha_channel
-    BringToFront = bring_to_front
-    Close = close
-    CurrentLocation = current_location
-    Disable = disable
-    DisableDebugger = disable_debugger
-    Disappear = disappear
-    Enable = enable
-    EnableDebugger = enable_debugger
-    Fill = fill
-    Finalize = finalize
-    # FindElement = find_element
-    FindElementWithFocus = find_element_with_focus
-    GetScreenDimensions = get_screen_dimensions
-    GrabAnyWhereOff = grab_any_where_off
-    GrabAnyWhereOn = grab_any_where_on
-    Hide = hide
-    Layout = layout
     LoadFromDisk = load_from_disk
-    Maximize = maximize
-    Minimize = minimize
-    Move = move
-    Normal = normal
-    Read = read
-    Reappear = reappear
-    Refresh = refresh
-    SaveToDisk = save_to_disk
-    SendToBack = send_to_back
-    SetAlpha = set_alpha
-    SetIcon = set_icon
-    SetTransparentColor = set_transparent_color
-    Size = size
-    UnHide = un_hide
-    VisibilityChanged = visibility_changed
-    CloseNonBlocking = close
+
     CloseNonBlockingForm = close
     start_thread = perform_long_operation
 
 
 # -------------------------------- PEP8-ify the Window Class USER Interfaces -------------------------------- #
-
-
-FlexForm = Window
 
 
 def _long_func_thread(window, end_key, original_func):
@@ -15725,7 +15675,6 @@ def _exit_mainloop(exiting_window):
         Window._window_that_exited = exiting_window
         if Window._root_running_mainloop is not None:
             Window._root_running_mainloop.quit()
-        # print('** Exited window mainloop **')
 
 
 def _timeout_alarm_callback_hidden():
@@ -15744,7 +15693,7 @@ def _timeout_alarm_callback_hidden():
     Window._window_that_exited = None
 
 
-def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
+def read_all_windows(timeout: int = None, timeout_key=TIMEOUT_KEY):
     """
     Reads all windows that are "active" when the call is made. "Active" means that it's been finalized or read.
     If a window has not been finalized then it will not be considered an "active window"
@@ -15769,7 +15718,7 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
     # first see if any queued events are waiting for any of the windows
     for window in Window._active_windows.keys():
         if window._queued_thread_event_available():
-            _BuildResults(window, False, window)
+            _build_results(window, False, window)
             event, values = window.ReturnValues
             return window, event, values
 
@@ -15777,13 +15726,13 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
     Window._timeout_key = timeout_key
 
     if timeout == 0:
-        window = list(Window._active_windows.keys())[Window._timeout_0_counter]
+        window = list(Window._active_windows.keys())[Window.timeout_0_counter]
         event, values = window._read_non_blocking()
         if event is None:
             event = timeout_key
         if values is None:
             event = None
-        Window._timeout_0_counter = (Window._timeout_0_counter + 1) % len(
+        Window._timeout_0_counter = (Window.timeout_0_counter + 1) % len(
             Window._active_windows
         )
         return window, event, values
@@ -15795,8 +15744,8 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
     # setup timeout timer
     if timeout is not None:
         try:
-            Window.hidden_master_root.after_cancel(Window._TKAfterID)
-            del Window._TKAfterID
+            Window.hidden_master_root.after_cancel(Window.TKAfterID)
+            del Window.TKAfterID
         except Exception:
             pass
 
@@ -15805,18 +15754,18 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
         )
 
     # ------------ Call Mainloop ------------
-    Window._root_running_mainloop.mainloop()
+    Window.root_running_mainloop.mainloop()
 
     try:
-        Window.hidden_master_root.after_cancel(Window._TKAfterID)
-        del Window._TKAfterID
+        Window.hidden_master_root.after_cancel(Window.TKAfterID)
+        del Window.TKAfterID
     except Exception:
         pass
         # print('** tkafter cancel failed **')
 
     # Get window that caused return
 
-    window = Window._window_that_exited
+    window = Window.window_that_exited
 
     if window is None:
         return None, timeout_key, None
@@ -15830,7 +15779,7 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
             pass
             # print('Error deleting window, but OK')
     else:
-        _BuildResults(window, False, window)
+        _build_results(window, False, window)
         event, values = window.ReturnValues
 
     return window, event, values
@@ -16401,14 +16350,14 @@ def vcenter(elem_or_row, expand_x=None, expand_y=None, background_color=None):
     if isinstance(elem_or_row, list) or isinstance(elem_or_row, tuple):
         return [
             Column(
-                [[e]],
+                [[_]],
                 pad=(0, 0),
                 vertical_alignment="center",
                 expand_x=expand_x,
                 expand_y=expand_y,
                 background_color=background_color,
             )
-            for e in elem_or_row
+            for _ in elem_or_row
         ]
 
     return Column(
@@ -18694,6 +18643,7 @@ def CalendarButton(
     """
     Button that will show a calendar chooser window.  Fills in the target element with result
 
+    :param enable_events:
     :param button_text:            text in the button
     :type button_text:             (str)
     :param target:                 Key or "coordinate" (see docs) of target element
@@ -18953,16 +18903,14 @@ def button_color_to_tuple(color_tuple_or_string, default=(None, None)):
     return color_tuple
 
 
-def _simplified_dual_color_to_tuple(color_tuple_or_string, default=(None, None)):
+def _simplified_dual_color_to_tuple(color_tuple_or_string:Union[str,tuple], default=(None, None)):
     """
     Convert a color tuple or color string into 2 components and returns them as a tuple
     (Text Color, Button Background Color)
     If None is passed in as the first parameter, theme_
 
     :param color_tuple_or_string: Button color - tuple or a simplied color string with word "on" between color
-    :type  color_tuple_or_string: str | (str, str} | (None, None)
     :param default:               The 2 colors to use if there is a problem. Otherwise defaults to the theme's button color
-    :type  default:               (str, str)
     :return:                      (str | (str, str)
     :rtype:                       str | (str, str)
     """
@@ -19031,37 +18979,31 @@ def _simplified_dual_color_to_tuple(color_tuple_or_string, default=(None, None))
 #####################################  -----  RESULTS   ------ ##################################################
 
 
-def AddToReturnDictionary(form, element, value):
+def add_to_return_dictionary(form, element, value):
     form.ReturnValuesDictionary[element.Key] = value
-    # if element.Key is None:
-    #     form.ReturnValuesDictionary[form.DictionaryKeyCounter] = value
-    #     element.Key = form.DictionaryKeyCounter
-    #     form.DictionaryKeyCounter += 1
-    # else:
-    #     form.ReturnValuesDictionary[element.Key] = value
 
 
-def AddToReturnList(form, value):
+
+def add_to_return_list(form, value):
     form.ReturnValuesList.append(value)
 
 
 # ----------------------------------------------------------------------------#
 # -------  FUNCTION InitializeResults.  Sets up form results matrix  --------#
-def InitializeResults(form):
-    _BuildResults(form, True, form)
-    return
+def initialize_results(form):
+    _build_results(form, True, form)
 
 
 # =====  Radio Button RadVar encoding and decoding =====#
 # =====  The value is simply the row * 1000 + col  =====#
-def DecodeRadioRowCol(RadValue):
+def decode_radio_row_col(RadValue):
     container = RadValue // 100000
     row = RadValue // 1000
     col = RadValue % 1000
     return container, row, col
 
 
-def EncodeRadioRowCol(container, row, col):
+def encode_radio_row_col(container, row, col):
     RadValue = container * 100000 + row * 1000 + col
     return RadValue
 
@@ -19069,7 +19011,7 @@ def EncodeRadioRowCol(container, row, col):
 # -------  FUNCTION BuildResults.  Form exiting so build the results to pass back  ------- #
 # format of return values is
 # (Button Pressed, input_values)
-def _BuildResults(form, initialize_only, top_level_form):
+def _build_results(form, initialize_only, top_level_form):
     # Results for elements are:
     #   TEXT - Nothing
     #   INPUT - Read value from TK
@@ -19098,7 +19040,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                 element.ReturnValuesDictionary = {}
                 _BuildResultsForSubform(element, initialize_only, top_level_form)
                 for item in element.ReturnValuesList:
-                    AddToReturnList(top_level_form, item)
+                    add_to_return_list(top_level_form, item)
                 if element.UseDictionary:
                     top_level_form.UseDictionary = True
                 if element.ReturnValues[0] is not None:  # if a button was clicked
@@ -19110,7 +19052,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                 element.ReturnValuesDictionary = {}
                 _BuildResultsForSubform(element, initialize_only, top_level_form)
                 for item in element.ReturnValuesList:
-                    AddToReturnList(top_level_form, item)
+                    add_to_return_list(top_level_form, item)
                 if element.UseDictionary:
                     top_level_form.UseDictionary = True
                 if element.ReturnValues[0] is not None:  # if a button was clicked
@@ -19122,7 +19064,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                 element.ReturnValuesDictionary = {}
                 _BuildResultsForSubform(element, initialize_only, top_level_form)
                 for item in element.ReturnValuesList:
-                    AddToReturnList(top_level_form, item)
+                    add_to_return_list(top_level_form, item)
                 if element.UseDictionary:
                     top_level_form.UseDictionary = True
                 if element.ReturnValues[0] is not None:  # if a button was clicked
@@ -19134,7 +19076,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                 element.ReturnValuesDictionary = {}
                 _BuildResultsForSubform(element, initialize_only, top_level_form)
                 for item in element.ReturnValuesList:
-                    AddToReturnList(top_level_form, item)
+                    add_to_return_list(top_level_form, item)
                 if element.UseDictionary:
                     top_level_form.UseDictionary = True
                 if element.ReturnValues[0] is not None:  # if a button was clicked
@@ -19146,7 +19088,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                 element.ReturnValuesDictionary = {}
                 _BuildResultsForSubform(element, initialize_only, top_level_form)
                 for item in element.ReturnValuesList:
-                    AddToReturnList(top_level_form, item)
+                    add_to_return_list(top_level_form, item)
                 if element.UseDictionary:
                     top_level_form.UseDictionary = True
                 if element.ReturnValues[0] is not None:  # if a button was clicked
@@ -19169,7 +19111,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                     value = value != 0
                 elif element.Type == ELEM_TYPE_INPUT_RADIO:
                     RadVar = element.TKIntVar.get()
-                    this_rowcol = EncodeRadioRowCol(
+                    this_rowcol = encode_radio_row_col(
                         form.ContainerElemementNumber, row_num, col_num
                     )
                     # this_rowcol = element.EncodedRadioValue       # could use the saved one
@@ -19286,7 +19228,6 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                                 ] = None
                             value = None
 
-
             else:
                 value = None
 
@@ -19306,8 +19247,8 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                         element.Type == ELEM_TYPE_BUTTONMENU
                         and element.part_of_custom_menubar
                 ):
-                    AddToReturnList(form, value)
-                    AddToReturnDictionary(top_level_form, element, value)
+                    add_to_return_list(form, value)
+                    add_to_return_dictionary(top_level_form, element, value)
             elif (
                     element.Type == ELEM_TYPE_BUTTON
                     and element.BType == BUTTON_TYPE_COLOR_CHOOSER
@@ -19326,8 +19267,8 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                             )
                     )
             ):
-                AddToReturnList(form, value)
-                AddToReturnDictionary(top_level_form, element, value)
+                add_to_return_list(form, value)
+                add_to_return_dictionary(top_level_form, element, value)
 
     # if this is a column, then will fail so need to wrap with try
     try:
@@ -19349,7 +19290,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
         queued_event_value = form._queued_thread_event_read()
         if queued_event_value is not None:
             event, value = queued_event_value
-            AddToReturnList(form, value)
+            add_to_return_list(form, value)
             form.ReturnValuesDictionary[event] = value
 
     if not form.UseDictionary:
@@ -19486,7 +19427,9 @@ def AddMenuItem(
                     top_menu.add_command(
                         label=item_without_key[len(MENU_DISABLED_CHARACTER):],
                         underline=pos - 1,
-                        command=lambda: element._MenuItemChosenCallback(sub_menu_info),
+                        command=lambda: element._menu_item_chosen_callback(
+                            sub_menu_info
+                        ),
                     )
                     top_menu.entryconfig(
                         item_without_key[len(MENU_DISABLED_CHARACTER):],
@@ -19496,7 +19439,9 @@ def AddMenuItem(
                     top_menu.add_command(
                         label=item_without_key,
                         underline=pos,
-                        command=lambda: element._MenuItemChosenCallback(sub_menu_info),
+                        command=lambda: element._menu_item_chosen_callback(
+                            sub_menu_info
+                        ),
                     )
     else:
         i = 0
@@ -19736,9 +19681,9 @@ def _change_ttk_theme(style, theme_name):
 
 
 def _make_ttk_style_name(base_style, element, primary_style=False):
-    Window._counter_for_ttk_widgets += 1
+    Window.counter_for_ttk_widgets += 1
     style_name = (
-            str(Window._counter_for_ttk_widgets) + "___" + str(element.Key) + base_style
+            str(Window.counter_for_ttk_widgets) + "___" + str(element.Key) + base_style
     )
     if primary_style:
         element.ttk_style_name = style_name
@@ -20062,11 +20007,13 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                     toplevel_form.TKRightClickMenu = top_menu
                     if running_mac():
                         toplevel_form.TKroot.bind(
-                            "<ButtonRelease-2>", toplevel_form._right_click_menu_callback
+                            "<ButtonRelease-2>",
+                            toplevel_form._right_click_menu_callback,
                         )
                     else:
                         toplevel_form.TKroot.bind(
-                            "<ButtonRelease-3>", toplevel_form._right_click_menu_callback
+                            "<ButtonRelease-3>",
+                            toplevel_form._right_click_menu_callback,
                         )
             if running_mac():
                 element.Widget.bind(
@@ -20480,7 +20427,7 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                     # tktext_label.pack_forget()
                 element.TKText = tktext_label
                 if element.ClickSubmits:
-                    tktext_label.bind("<Button-1>", element._TextClickedHandler)
+                    tktext_label.bind("<Button-1>", element._text_clicked_handler)
                 if element.Tooltip is not None:
                     element.TooltipObject = ToolTip(
                         element.TKText,
@@ -20661,12 +20608,12 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                     element._pack_forget_save_settings()
                     # tkbutton.pack_forget()
                 if element.BindReturnKey:
-                    element.TKButton.bind("<Return>", element._ReturnKeyHandler)
+                    element.TKButton.bind("<Return>", element._return_key_handler)
                 if element.Focus is True or (
                         toplevel_form.UseDefaultFocus and not toplevel_form.FocusSet
                 ):
                     toplevel_form.FocusSet = True
-                    element.TKButton.bind("<Return>", element._ReturnKeyHandler)
+                    element.TKButton.bind("<Return>", element._return_key_handler)
                     element.TKButton.focus_set()
                     toplevel_form.TKroot.focus_force()
                 if element.Disabled is True:
@@ -20887,12 +20834,12 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                     element._pack_forget_save_settings()
                     # tkbutton.pack_forget()
                 if element.BindReturnKey:
-                    element.TKButton.bind("<Return>", element._ReturnKeyHandler)
+                    element.TKButton.bind("<Return>", element._return_key_handler)
                 if element.Focus is True or (
                         toplevel_form.UseDefaultFocus and not toplevel_form.FocusSet
                 ):
                     toplevel_form.FocusSet = True
-                    element.TKButton.bind("<Return>", element._ReturnKeyHandler)
+                    element.TKButton.bind("<Return>", element._return_key_handler)
                     element.TKButton.focus_set()
                     toplevel_form.TKroot.focus_force()
                 if element.Disabled is True:
@@ -21079,7 +21026,7 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                 )
                 if element.ChangeSubmits:
                     element.TKEntry.bind("<Key>", element._KeyboardHandler)
-                element.TKEntry.bind("<Return>", element._ReturnKeyHandler)
+                element.TKEntry.bind("<Return>", element._return_key_handler)
 
                 if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                     element.TKEntry.configure(
@@ -21234,7 +21181,7 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                 # Strange code that is needed to set the font for the drop-down list
                 element._dropdown_newfont = tkinter.font.Font(font=font)
                 tk_row_frame.option_add(
-                    "*TCombobox*Listbox*Font", element._dropdown_newfont
+                    "*TCombobox*Listbox*Font", element.dropdown_newfont
                 )
 
                 element.TKCombo = element.Widget = ttk.Combobox(
@@ -21465,29 +21412,6 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                         "<Leave>", lambda event, em=element: testMouseUnhook(em)
                     )
 
-                # else:
-                #     element.TKText.config(wrap='word')
-
-                # if not element.NoScrollbar:
-                #     # Vertical scrollbar
-                #     element.vsb = tk.Scrollbar(element_frame, orient="vertical", command=element.TKListbox.yview)
-                #     element.TKListbox.configure(yscrollcommand=element.vsb.set)
-                #     element.vsb.pack(side=tk.RIGHT, fill='y')
-
-                # Horizontal scrollbar
-                # if element.HorizontalScroll:
-                #     hscrollbar = tk.Scrollbar(element_frame, orient=tk.HORIZONTAL)
-                #     hscrollbar.pack(side=tk.BOTTOM, fill='x')
-                #     hscrollbar.config(command=element.Widget.xview)
-                #     element.Widget.configure(xscrollcommand=hscrollbar.set)
-                #     element.hsb = hscrollbar
-                #
-                #     # Chr0nic
-                #     element.TKListbox.bind("<Enter>", lambda event, em=element: testMouseHook(em))
-                #     element.TKListbox.bind("<Leave>", lambda event, em=element: testMouseUnhook(em))
-                #
-                #
-
                 expand, fill, row_should_expand, row_fill_direction = _add_expansion(
                     element, row_should_expand, row_fill_direction
                 )
@@ -21633,7 +21557,7 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                 if element.ChangeSubmits:
                     element.TKText.bind("<Key>", element._KeyboardHandler)
                 if element.EnterSubmits:
-                    element.TKText.bind("<Return>", element._ReturnKeyHandler)
+                    element.TKText.bind("<Return>", element._return_key_handler)
                 if element.Focus is True or (
                         toplevel_form.UseDefaultFocus and not toplevel_form.FocusSet
                 ):
@@ -21788,7 +21712,7 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                 default_value = element.InitialState
                 ID = element.GroupID
                 # see if ID has already been placed
-                value = EncodeRadioRowCol(
+                value = encode_radio_row_col(
                     form.ContainerElemementNumber, row_num, col_num
                 )  # value to set intvar to if this radio is selected
                 element.EncodedRadioValue = value
@@ -21988,25 +21912,25 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
             elif element_type == ELEM_TYPE_CANVAS:
                 element = element  # type: Canvas
                 width, height = element_size
-                if element._TKCanvas is None:
+                if element.TKCanvas is None:
                     element._TKCanvas = tk.Canvas(
                         tk_row_frame, width=width, height=height, bd=border_depth
                     )
                 else:
-                    element._TKCanvas.master = tk_row_frame
-                element.Widget = element._TKCanvas
+                    element.TKCanvas.master = tk_row_frame
+                element.Widget = element.TKCanvas
 
                 if (
                         element.BackgroundColor is not None
                         and element.BackgroundColor != COLOR_SYSTEM_DEFAULT
                 ):
-                    element._TKCanvas.configure(
+                    element.TKCanvas.configure(
                         background=element.BackgroundColor, highlightthickness=0
                     )
                 expand, fill, row_should_expand, row_fill_direction = _add_expansion(
                     element, row_should_expand, row_fill_direction
                 )
-                element._TKCanvas.pack(
+                element.TKCanvas.pack(
                     side=tk.LEFT,
                     padx=elementpad[0],
                     pady=elementpad[1],
@@ -22018,7 +21942,7 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                     # element._TKCanvas.pack_forget()
                 if element.Tooltip is not None:
                     element.TooltipObject = ToolTip(
-                        element._TKCanvas,
+                        element.TKCanvas,
                         text=element.Tooltip,
                         timeout=DEFAULT_TOOLTIP_TIME,
                     )
@@ -22039,17 +21963,17 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                 expand, fill, row_should_expand, row_fill_direction = _add_expansion(
                     element, row_should_expand, row_fill_direction
                 )
-                element._TKCanvas2.pack(side=tk.LEFT, expand=expand, fill=fill)
-                element._TKCanvas2.addtag_all("mytag")
+                element.TKCanvas2.pack(side=tk.LEFT, expand=expand, fill=fill)
+                element.TKCanvas2.addtag_all("mytag")
                 if (
                         element.BackgroundColor is not None
                         and element.BackgroundColor != COLOR_SYSTEM_DEFAULT
                 ):
-                    element._TKCanvas2.configure(
+                    element.TKCanvas2.configure(
                         background=element.BackgroundColor, highlightthickness=0
                     )
                     # element._TKCanvas.configure(background=element.BackgroundColor, highlightthickness=0)
-                element._TKCanvas2.pack(
+                element.TKCanvas2.pack(
                     side=tk.LEFT,
                     padx=elementpad[0],
                     pady=elementpad[1],
@@ -22061,19 +21985,19 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                     # element._TKCanvas2.pack_forget()
                 if element.Tooltip is not None:
                     element.TooltipObject = ToolTip(
-                        element._TKCanvas2,
+                        element.TKCanvas2,
                         text=element.Tooltip,
                         timeout=DEFAULT_TOOLTIP_TIME,
                     )
                 if element.ChangeSubmits:
-                    element._TKCanvas2.bind(
+                    element.TKCanvas2.bind(
                         "<ButtonRelease-1>", element.ButtonReleaseCallBack
                     )
-                    element._TKCanvas2.bind(
+                    element.TKCanvas2.bind(
                         "<ButtonPress-1>", element.ButtonPressCallBack
                     )
                 if element.DragSubmits:
-                    element._TKCanvas2.bind("<Motion>", element.MotionCallBack)
+                    element.TKCanvas2.bind("<Motion>", element.MotionCallBack)
                 _add_right_click_menu_and_grab(element)
             # -------------------------  MENU placement element  ------------------------- #
             elif element_type == ELEM_TYPE_MENUBAR:
@@ -23052,23 +22976,6 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                         "<Leave>", lambda event, em=element: testMouseUnhook(em)
                     )
 
-                # Horizontal scrollbar
-                # if not element.VerticalScrollOnly:
-                #     element.TKText.config(wrap='none')
-                #     _make_ttk_scrollbar(element, 'h')
-                #     element.hsb.pack(side=tk.BOTTOM, fill='x')
-                #     element.Widget.configure(xscrollcommand=element.hsb.set)
-
-                # if not element.HideVerticalScroll or not element.VerticalScrollOnly:
-                # Chr0nic
-                # element.Widget.bind("<Enter>", lambda event, em=element: testMouseHook(em))
-                # element.Widget.bind("<Leave>", lambda event, em=element: testMouseUnhook(em))
-
-                # element.scrollbar = scrollbar = tk.Scrollbar(element_frame)
-                # scrollbar.pack(side=tk.RIGHT, fill='y')
-                # scrollbar.config(command=treeview.yview)
-                # treeview.configure(yscrollcommand=scrollbar.set)
-
                 expand, fill, row_should_expand, row_fill_direction = _add_expansion(
                     element, row_should_expand, row_fill_direction
                 )
@@ -23275,7 +23182,7 @@ def pack_form_into_frame(form: Window, containing_frame, toplevel_form) -> Windo
                     # tktext_label.pack_forget()
                 element.TKText = tktext_label
                 if element.ClickSubmits:
-                    tktext_label.bind("<Button-1>", element._TextClickedHandler)
+                    tktext_label.bind("<Button-1>", element._text_clicked_handler)
                 if element.Tooltip is not None:
                     element.TooltipObject = ToolTip(
                         element.TKText,
@@ -23394,15 +23301,15 @@ def _convert_window_to_tk(window):
     """
     master = window.TKroot
     master.title(window.Title)
-    InitializeResults(window)
+    initialize_results(window)
 
     pack_form_into_frame(window, master, window)
 
     window.TKroot.configure(padx=window.Margins[0], pady=window.Margins[1])
 
     # ....................................... DONE creating and laying out window ..........................#
-    if window._Size != (None, None):
-        master.geometry("%sx%s" % (window._Size[0], window._Size[1]))
+    if window.Size != (None, None):
+        master.geometry("%sx%s" % (window.Size[0], window.Size[1]))
     screen_width = (
         master.winfo_screenwidth()
     )  # get window info to move to middle of screen
@@ -23605,7 +23512,9 @@ def StartupTK(window):
             # window.TKAfterID = root.after(int(duration * 1000), window._AutoCloseAlarmCallback)
 
     if window.Timeout is not None:
-        window.TKAfterID = root.after(int(window.Timeout), window._timeout_alarm_callback)
+        window.TKAfterID = root.after(
+            int(window.Timeout), window._timeout_alarm_callback
+        )
     if window.NonBlocking:
         window.TKroot.protocol("WM_DESTROY_WINDOW", window._on_closing_callback)
         window.TKroot.protocol("WM_DELETE_WINDOW", window._on_closing_callback)
@@ -29900,7 +29809,7 @@ def popup_get_file(
         history_settings = None
 
     if icon is None:
-        icon = Window._user_defined_icon or DEFAULT_BASE64_ICON
+        icon = Window.user_defined_icon or DEFAULT_BASE64_ICON
     if no_window:
         _get_hidden_master_root()
         root = tk.Toplevel()
@@ -30690,13 +30599,13 @@ def popup_animated(
     :rtype:                     bool
     """
     if image_source is None:
-        for image in Window._animated_popup_dict:
-            window = Window._animated_popup_dict[image]
+        for image in Window.animated_popup_dict:
+            window = Window.animated_popup_dict[image]
             window.close()
         Window._animated_popup_dict = {}
         return
 
-    if image_source not in Window._animated_popup_dict:
+    if image_source not in Window.animated_popup_dict:
         if type(image_source) is bytes or len(image_source) > 300:
             layout = [
                 [
@@ -30746,9 +30655,9 @@ def popup_animated(
             icon=icon,
             relative_location=relative_location,
         )
-        Window._animated_popup_dict[image_source] = window
+        Window.animated_popup_dict[image_source] = window
     else:
-        window = Window._animated_popup_dict[image_source]
+        window = Window.animated_popup_dict[image_source]
         if no_buffering:
             window["-IMAGE-"].update_animation_no_buffering(
                 image_source, time_between_frames=time_between_frames
@@ -31186,18 +31095,6 @@ def _create_error_message():
     )
 
 
-#   .d8888b.           888    888    d8b
-#  d88P  Y88b          888    888    Y8P
-#  Y88b.               888    888
-#   "Y888b.    .d88b.  888888 888888 888 88888b.   .d88b.  .d8888b
-#      "Y88b. d8P  Y8b 888    888    888 888 "88b d88P"88b 88K
-#        "888 88888888 888    888    888 888  888 888  888 "Y8888b.
-#  Y88b  d88P Y8b.     Y88b.  Y88b.  888 888  888 Y88b 888      X88
-#   "Y8888P"   "Y8888   "Y888  "Y888 888 888  888  "Y88888  88888P'
-#                                                      888
-#                                                 Y8b d88P
-#                                                  "Y88P"
-
 # Interface to saving / loading user program settings in json format
 # This is a new set of APIs supplied by PySimpleGUI that enables users to easily set/save/load individual
 # settings.  They are automatically saved to a JSON file. If no file/path is specified then a filename is
@@ -31258,8 +31155,7 @@ class UserSettings:
         if use_config_file:
             self.config = configparser.ConfigParser()
             self.config.optionxform = str
-            # self.config_dict = {}
-            self.section_class_dict = {}  # type: dict[_SectionDict]
+            self.section_class_dict = {}
         if filename is not None or path is not None:
             self.load(filename=filename, path=path)
 
@@ -31272,24 +31168,25 @@ class UserSettings:
         item_count = 0
 
         def __init__(
-                self, section_name, section_dict, config, user_settings_parent
+                self,
+                section_name: str,
+                section_dict: dict,
+                config: configparser.ConfigParser,
+                user_settings_parent,
         ):  # (str, Dict, configparser.ConfigParser)
             """
             The Section Dictionary.  It holds the values for a section.
 
             :param section_name:                Name of the section
-            :type section_name:                 str
             :param section_dict:                Dictionary of values for the section
-            :type section_dict:                 dict
             :param config:                      The configparser object
-            :type config:                       configparser.ConfigParser
             :param user_settings_parent:        The parent UserSettings object that hdas this section
             :type user_settings_parent:         UserSettings
             """
             self.section_name = section_name
-            self.section_dict = section_dict  # type: Dict
+            self.section_dict = section_dict
             self.new_section = False
-            self.config = config  # type: configparser.ConfigParser
+            self.config = config
             self.user_settings_parent = user_settings_parent  # type: UserSettings
             UserSettings._SectionDict.item_count += 1
 
@@ -31393,9 +31290,8 @@ class UserSettings:
             self.config.remove_option(section=self.section_name, option=item)
             try:
                 del self.section_dict[item]
-            except Exception:
-                pass
-                # print(e)
+            except Exception as e:
+                print(e)
             if self.user_settings_parent.autosave:
                 self.user_settings_parent.save()
 
@@ -31862,9 +31758,13 @@ class UserSettings:
         else:
             self.delete_entry(key=item)
 
+    @property
+    def default_for_function_interface(self):
+        return self._default_for_function_interface
+
 
 # Create a singleton for the settings information so that the settings functions can be used
-if UserSettings._default_for_function_interface is None:
+if UserSettings.default_for_function_interface is None:
     UserSettings._default_for_function_interface = UserSettings()
 
 
@@ -31887,7 +31787,7 @@ def user_settings_filename(filename=None, path=None):
     :return:         The full pathname of the settings file that has both the path and filename combined.
     :rtype:          (str)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     return settings.get_filename(filename, path)
 
 
@@ -31904,7 +31804,7 @@ def user_settings_delete_filename(filename=None, path=None, report_error=False):
     :param path:     The folder that the settings file will be stored in. Do not include the filename.
     :type path:      (str)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     settings.delete_file(filename, path, report_error=report_error)
 
 
@@ -31919,7 +31819,7 @@ def user_settings_set_entry(key, value):
     :param value: Value to save as the setting's value. Can be anything
     :type value:  (Any)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     settings.set(key, value)
 
 
@@ -31934,7 +31834,7 @@ def user_settings_delete_entry(key, silent_on_error=None):
     :param silent_on_error: Determines if an error popup should be shown if an error occurs. Overrides the silent onf effort setting from initialization
     :type silent_on_error:  (bool)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     settings.delete_entry(key, silent_on_error=silent_on_error)
 
 
@@ -31953,7 +31853,7 @@ def user_settings_get_entry(key, default=None):
     :return:        Value of specified settings
     :rtype:         (Any)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     return settings.get(key, default)
 
 
@@ -31969,7 +31869,7 @@ def user_settings_save(filename=None, path=None):
     :return:         The full path and filename used to save the settings
     :rtype:          (str)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     return settings.save(filename, path)
 
 
@@ -31986,7 +31886,7 @@ def user_settings_load(filename=None, path=None):
     :return:         The settings dictionary (i.e. all settings)
     :rtype:          (dict)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     return settings.load(filename, path)
 
 
@@ -32003,7 +31903,7 @@ def user_settings_file_exists(filename=None, path=None):
     :return:         True if the file exists
     :rtype:          (bool)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     return settings.exists(filename=filename, path=path)
 
 
@@ -32014,7 +31914,7 @@ def user_settings_write_new_dictionary(settings_dict):
     :param settings_dict: The dictionary to be written to the currently defined settings file
     :type settings_dict:  (dict)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     settings.write_new_dictionary(settings_dict)
 
 
@@ -32025,7 +31925,7 @@ def user_settings_silent_on_error(silent_on_error=False):
     :param silent_on_error: If True then all error messages are silenced (not displayed on the console)
     :type silent_on_error:  (bool)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     settings.silent_on_error = silent_on_error
 
 
@@ -32036,7 +31936,7 @@ def user_settings():
     :return:            The current settings dictionary as a dictionary or a nicely formatted string representing it
     :rtype:             (dict or str)
     """
-    settings = UserSettings._default_for_function_interface
+    settings = UserSettings.default_for_function_interface
     return settings.get_dict()
 
 
@@ -32048,7 +31948,7 @@ def user_settings_object():
     :return:    The UserSettings obect used for the function level interface
     :rtype:     (UserSettings)
     """
-    return UserSettings._default_for_function_interface
+    return UserSettings.default_for_function_interface
 
 
 """
@@ -33834,11 +33734,11 @@ def _global_settings_get_ttk_scrollbar_info():
 def _global_settings_get_watermark_info():
     if (
             not pysimplegui_user_settings.get("-watermark-", False)
-            and not Window._watermark_temp_forced
+            and not Window.watermark_temp_forced
     ):
         Window._watermark = None
         return
-    forced = Window._watermark_temp_forced
+    forced = Window.watermark_temp_forced
     prefix_text = pysimplegui_user_settings.get("-watermark text-", "")
 
     ver_text = (
@@ -34522,9 +34422,6 @@ def main_sdk_help():
             event, values = window.read()
             if event in (WIN_CLOSED, "Exit"):
                 break
-            if event == "-DOC LINK-":
-                if webbrowser_available and online_help_link:
-                    webbrowser.open_new_tab(online_help_link)
             if event == "-SUMMARY-":
                 event = current_element
 
@@ -34872,15 +34769,6 @@ def _create_main_window():
             Image(HEART_3D_BASE64, subsample=3, enable_events=True, k="-HEART-"),
             T("so far?"),
         ],
-        [
-            T(
-                'Want to be taught PySimpleGUI?\nThen maybe the "Official PySimpleGUI Course" on Udemy is for you.'
-            )
-        ],
-        [
-            B(image_data=UDEMY_ICON, enable_events=True, k="-UDEMY-"),
-            T("Check docs, announcements, easter eggs on this page for coupons."),
-        ],
     ]
 
     pop_test_tab_layout = [
@@ -35168,12 +35056,7 @@ def _create_main_window():
         # grab_anywhere=True,
         enable_close_attempted_event=True,
         modal=False,
-        # ttk_theme=THEME_CLASSIC,
-        # scaling=2,
-        # icon=PSG_DEBUGGER_LOGO,
-        # icon=PSGDebugLogo,
     )
-    # window['-SPONSOR-'].set_cursor(cursor='hand2')
     window._see_through = False
     return window
 
@@ -35274,25 +35157,6 @@ def main():
             popup_scrolled(
                 "Returned:", popup_get_text("Enter some text", keep_on_top=True)
             )
-        elif event.startswith("-UDEMY-"):
-            webbrowser.open_new_tab(
-                r"https://www.udemy.com/course/pysimplegui/?couponCode=522B20BF5EF123C4AB30"
-            )
-        elif event.startswith("-SPONSOR-"):
-            if webbrowser_available:
-                webbrowser.open_new_tab(r"https://www.paypal.me/pythongui")
-        elif event == "-COFFEE-":
-            if webbrowser_available:
-                webbrowser.open_new_tab(r"https://www.buymeacoffee.com/PySimpleGUI")
-        elif event in ("-EMOJI-HEARTS-", "-HEART-", "-PYTHON HEARTS-"):
-            popup_scrolled(
-                "Oh look!  It's a Udemy discount coupon!",
-                "522B20BF5EF123C4AB30",
-                "A personal message from Mike -- thank you so very much for supporting PySimpleGUI!",
-                title="Udemy Coupon",
-                image=EMOJI_BASE64_MIKE,
-                keep_on_top=True,
-            )
         elif event == "Themes":
             search_string = popup_get_text(
                 "Enter a search term or leave blank for all themes",
@@ -35360,14 +35224,10 @@ def main():
                 )
         elif event == "Edit Me":
             execute_editor(__file__)
-        # elif event == 'Open GitHub Issue':
-        #     window.minimize()
-        #     main_open_github_issue()
-        #     window.normal()
+
         elif event == "Show Notification Again":
             if not running_trinket():
                 pysimplegui_user_settings.set("-upgrade info seen-", False)
-            __show_previous_upgrade_information()
         elif event == "-UPGRADE SHOW ONLY CRITICAL-":
             if not running_trinket():
                 pysimplegui_user_settings.set(
@@ -35435,7 +35295,6 @@ sprint = popup_scrolled
 ScrolledTextBox = popup_scrolled
 
 test = main
-sdk_help = main_sdk_help
 
 pysimplegui_user_settings = UserSettings(
     filename=DEFAULT_USER_SETTINGS_PYSIMPLEGUI_FILENAME,
