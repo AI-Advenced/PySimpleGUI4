@@ -1884,7 +1884,7 @@ class Element:
 
     def __init__(
             self,
-            type_: int,
+            type_: str,
             size: Union[tuple, int] = (None, None),
             auto_size_text: bool = None,
             font: str = None,
@@ -2821,72 +2821,6 @@ class Element:
             else:
                 self.Widget.bind("<ButtonRelease-3>", self._right_click_menu_callback)
 
-    def save_element_screenshot_to_disk(self, filename: str = None):
-        """
-        Saves an image of the PySimpleGUI window provided into the filename provided
-
-        :param filename:        Optional filename to save screenshot to. If not included, the User Settinds are used to get the filename
-        :return:                A PIL ImageGrab object that can be saved or manipulated
-        :rtype:                 (PIL.ImageGrab | None)
-        """
-        global pil_import_attempted, pil_imported, PIL, ImageGrab, Image
-
-        if not pil_import_attempted:
-            try:
-                import PIL as PIL
-                from PIL import ImageGrab
-                from PIL import Image
-
-                pil_imported = True
-                pil_import_attempted = True
-            except Exception:
-                pil_imported = False
-                pil_import_attempted = True
-                print("FAILED TO IMPORT PIL!")
-                return None
-        try:
-            # Add a little to the X direction if window has a titlebar
-            rect = (
-                self.widget.winfo_rootx(),
-                self.widget.winfo_rooty(),
-                self.widget.winfo_rootx() + self.widget.winfo_width(),
-                self.widget.winfo_rooty() + self.widget.winfo_height(),
-            )
-
-            grab = ImageGrab.grab(bbox=rect)
-            # Save the grabbed image to disk
-        except Exception as e:
-            # print(e)
-            popup_error_with_traceback(
-                "Screen capture failure",
-                "Error happened while trying to save screencapture of an element",
-                e,
-            )
-            return None
-
-        # return grab
-        if filename is None:
-            folder = pysimplegui_user_settings.get("-screenshots folder-", "")
-            filename = pysimplegui_user_settings.get("-screenshots filename-", "")
-            full_filename = os.path.join(folder, filename)
-        else:
-            full_filename = filename
-        if full_filename:
-            try:
-                grab.save(full_filename)
-            except Exception as e:
-                popup_error_with_traceback(
-                    "Screen capture failure",
-                    "Error happened while trying to save screencapture",
-                    e,
-                )
-        else:
-            popup_error_with_traceback(
-                "Screen capture failure",
-                "You have attempted a screen capture but have not set up a good filename to save to",
-            )
-        return grab
-
     def _pack_forget_save_settings(self, alternate_widget=None):
         """
         Performs a pack_forget which will make a widget invisible.
@@ -3077,7 +3011,8 @@ class Input(Element):
         self.BorderWidth = (
             border_width if border_width is not None else DEFAULT_BORDER_WIDTH
         )
-        self.TKEntry = self.Widget = None  # type: tk.Entry
+        self.TKEntry = None
+        self.Widget = None
         key = key if key is not None else k
         sz = size if size != (None, None) else s
         pad = pad if pad is not None else p
@@ -3345,7 +3280,7 @@ class Combo(Element):
         self.Values = values
         self.DefaultValue = default_value
         self.ChangeSubmits = change_submits or enable_events
-        self.Widget = self.TKCombo = None  # type: ttk.Combobox
+        self.Widget = self.TKCombo = None  ## type: ttk.Combobox
         self.Disabled = disabled
         self.Readonly = readonly
         self.BindReturnKey = bind_return_key
@@ -3926,10 +3861,10 @@ class Listbox(Element):
             highlight_text_color if highlight_text_color is not None else bg
         )
         self.RightClickMenu = right_click_menu
-        self.vsb = None  # type: tk.Scrollbar or None
-        self.hsb = None  # type: tk.Scrollbar | None
-        self.TKListbox = self.Widget = None  # type: tk.Listbox
-        self.element_frame = None  # type: tk.Frame
+        self.vsb = None  ## type: tk.Scrollbar or None
+        self.hsb = None  ## type: tk.Scrollbar | None
+        self.TKListbox = self.Widget = None  ## type: tk.Listbox
+        self.element_frame = None  ## type: tk.Frame
         self.NoScrollbar = no_scrollbar
         self.HorizontalScroll = horizontal_scroll
         key = key if key is not None else k
@@ -7827,7 +7762,7 @@ class Image(Element):
 
         self.Filename = filename
         self.Data = data
-        self.Widget = self.tktext_label = None  # type: tk.Label
+        self.Widget = self.tktext_label = None  # #type: tk.Label
         self.BackgroundColor = background_color
         if data is None and filename is None:
             self.Filename = ""
@@ -12486,14 +12421,14 @@ class Tree(Element):
         return self
 
 
-class TreeData(object):
+class TreeData:
     """
     Class that user fills in to represent their tree data. It's a very simple tree representation with a root "Node"
     with possibly one or more children "Nodes".  Each Node contains a key, text to display, list of values to display
     and an icon.  The entire tree is built using a single method, Insert.  Nothing else is required to make the tree.
     """
 
-    class Node(object):
+    class Node:
         """
         Contains information about the individual node in the tree
         """
@@ -18903,7 +18838,7 @@ def button_color_to_tuple(color_tuple_or_string, default=(None, None)):
     return color_tuple
 
 
-def _simplified_dual_color_to_tuple(color_tuple_or_string:Union[str,tuple], default=(None, None)):
+def _simplified_dual_color_to_tuple(color_tuple_or_string: Union[str, tuple], default=(None, None)):
     """
     Convert a color tuple or color string into 2 components and returns them as a tuple
     (Text Color, Button Background Color)
@@ -18981,7 +18916,6 @@ def _simplified_dual_color_to_tuple(color_tuple_or_string:Union[str,tuple], defa
 
 def add_to_return_dictionary(form, element, value):
     form.ReturnValuesDictionary[element.Key] = value
-
 
 
 def add_to_return_list(form, value):
