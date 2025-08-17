@@ -57,27 +57,44 @@ You can verify that the legacy version is installed correctly by running a simpl
 
 ```python
 import PySimpleGUI4 as sg
+from pyguievent import PySimpleEvent
 
-# Define the layout
-layout = [
-    [sg.Text("Enter your name:")],
-    [sg.Input(key='-INPUT-')],
-    [sg.Button("Submit"), sg.Button("Exit")]
-]
+app = PySimpleEvent()
 
-# Create the window
-window = sg.Window("PySimpleGUI Legacy Example", layout)
 
-# Event loop
-while True:
-    event, values = window.read()
-    if event == sg.WINDOW_CLOSED or event == "Exit":
-        break
-    if event == "Submit":
-        sg.popup(f"Hello, {values['-INPUT-']}!")
+def make_main_window() -> sg.Window:
+    task_list = [
+        sg.Frame(
+            "Tasks",
+            [
+                [sg.Input(key="lot", tooltip="此输入框输入后使用回车事件触发")],
+                [sg.Text(key="lot_txt")],
+            ],
+            size=(400, 200),
+        )
+    ]
 
-# Close the window
-window.close()
+    status_bar = [sg.StatusBar("版本:"), sg.StatusBar("状态:")]
+
+    layout = [task_list, status_bar]
+
+    # 3.建窗口
+    return sg.Window("测试程式窗口", layout, return_keyboard_events=True)
+
+
+@app.bind_event("lot")
+def on_lot(window: sg.Window, values: dict):
+    lot = values["lot"]
+    window["lot_txt"].update(lot)
+
+
+def main():
+    main_window = make_main_window()
+    app.run_event(main_window)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 Run the script to ensure that the GUI appears and functions as expected.

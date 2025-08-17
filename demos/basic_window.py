@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-import PySimpleGUI as sg
+import PySimpleGUI4 as sg
 from pyguievent import PySimpleEvent
 
 sg.theme("DefaultNoMoreNagging")
@@ -131,7 +131,7 @@ def main():
     main_window = make_main_window()
 
     # 增加了一个Exit退出事件
-    app.run_event(main_window, "Exit", window_log=True)
+    app.run_event(main_window, "Exit")
 
 
 if __name__ == "__main__":
