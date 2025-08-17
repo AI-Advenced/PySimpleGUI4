@@ -1,19 +1,17 @@
 #!/usr/bin/python3
 
-version = "4.80.1 Released 2025-08-17"
+version = "4.80.2"
 
 _change_log = """
     Changelog since 4.70.1 released to PyPI on 20-Jul-2024
 
     """
 
-__version__ = version.split()[0]  # For PEP 396 and PEP 345
+__version__ = version  # For PEP 396 and PEP 345
 
 # The shortened version of version
-try:
-    ver = version.split(" ")[0]
-except Exception:
-    ver = ""
+ver = version
+
 
 # INFO START
 port = "PySimpleGUI"

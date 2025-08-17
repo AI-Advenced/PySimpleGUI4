@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "PySimpleGUI4"
+dynamic = ["version"]
+description = "The free-forever and simple Python GUI framework"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "yunluo", email = "sp91@qq.com" }
+]
+keywords = ["PySimpleGui", "GUI", "UI", "tkinter"]
+requires-python = ">=3"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Graphics",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pyguievent",
+]
+urls = { Source = "https://github.com/yunluo/PySimpleGUI4" }
+
+[tool.hatch.version]
+path = "PySimpleGUI4.py"
+pattern = "version = [\"'](?P<version>[^\"']+)[\"']"
