@@ -1,5 +1,76 @@
 #!/usr/bin/python3
 
+# all of the tkinter involved imports
+import tkinter as tk
+
+# import tkinter.scrolledtext as tkst
+import tkinter.font
+from tkinter import filedialog
+from tkinter import ttk
+from tkinter.colorchooser import askcolor
+
+# end of tkinter specific imports
+# get the tkinter detailed version
+tclversion_detailed = tkinter.Tcl().eval("info patchlevel")
+framework_version = tclversion_detailed
+
+import time
+import pickle
+import calendar
+import datetime
+import textwrap
+
+import socket
+from hashlib import sha256 as hh
+import inspect
+import traceback
+import difflib
+import copy
+import pprint
+
+try:  # Because Raspberry Pi is still on 3.4....it's not critical if this module isn't imported on the Pi
+    from typing import (
+        List,
+        Any,
+        Union,
+        Tuple,
+        Dict,
+        SupportsAbs,
+        Optional,
+    )  # because this code has to run on 2.7 can't use real type hints.  Must do typing only in comments
+except Exception:
+    print(
+        '*** Skipping import of Typing module. "pip3 install typing" to remove this warning ***'
+    )
+import random
+import warnings
+from math import floor
+from math import fabs
+from functools import wraps
+
+try:  # Because Raspberry Pi is still on 3.4....
+    import subprocess
+except Exception as e:
+    print("** Import error {} **".format(e))
+
+import threading
+import itertools
+import json
+import configparser
+import queue
+
+try:
+    import webbrowser
+    webbrowser_available = True
+except Exception:
+    webbrowser_available = False
+
+import pydoc
+import os
+import sys
+import ctypes
+import platform
+
 version = "4.80.2"
 
 _change_log = """
@@ -11,7 +82,6 @@ __version__ = version  # For PEP 396 and PEP 345
 
 # The shortened version of version
 ver = version
-
 
 # INFO START
 port = "PySimpleGUI"
@@ -78,80 +148,6 @@ __email__ = "sp91@qq.com"
 
     "Thank you" has fueled this project. I'm incredibly grateful to have users that are in turn grateful. It's a feedback loop of gratitude. What a fantastic thing!
 """
-# all of the tkinter involved imports
-import tkinter as tk
-# import tkinter.scrolledtext as tkst
-import tkinter.font
-from tkinter import filedialog
-from tkinter import ttk
-from tkinter.colorchooser import askcolor
-
-# end of tkinter specific imports
-# get the tkinter detailed version
-tclversion_detailed = tkinter.Tcl().eval("info patchlevel")
-framework_version = tclversion_detailed
-
-import time
-import pickle
-import calendar
-import datetime
-import textwrap
-
-import socket
-from hashlib import sha256 as hh
-import inspect
-import traceback
-import difflib
-import copy
-import pprint
-
-try:  # Because Raspberry Pi is still on 3.4....it's not critical if this module isn't imported on the Pi
-    from typing import (
-        List,
-        Any,
-        Union,
-        Tuple,
-        Dict,
-        SupportsAbs,
-        Optional,
-    )  # because this code has to run on 2.7 can't use real type hints.  Must do typing only in comments
-except Exception:
-    print(
-        '*** Skipping import of Typing module. "pip3 install typing" to remove this warning ***'
-    )
-import random
-import warnings
-from math import floor
-from math import fabs
-from functools import wraps
-
-try:  # Because Raspberry Pi is still on 3.4....
-    # from subprocess import run, PIPE, Popen
-    import subprocess
-except Exception as e:
-    print("** Import error {} **".format(e))
-
-import threading
-import itertools
-import json
-import configparser
-import queue
-
-try:
-    import webbrowser
-
-    webbrowser_available = True
-except Exception:
-    webbrowser_available = False
-# used for github upgrades
-import urllib.request
-import urllib.error
-import urllib.parse
-import pydoc
-import os
-import sys
-import ctypes
-import platform
 
 pil_import_attempted = pil_imported = False
 
@@ -23239,7 +23235,9 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                             else:
                                 col_anchor = anchor
 
-                        except Exception:  # likely didn't specify enough entries (must be one per col)
+                        except (
+                                Exception
+                        ):  # likely didn't specify enough entries (must be one per col)
                             col_anchor = anchor
                     else:
                         col_anchor = anchor
@@ -24351,9 +24349,7 @@ def _GetNumLinesNeeded(text, max_line_width):
 
 
 def convert_args_to_single_string(*args):
-    """
-
-    """
+    """ """
     (
         max_line_total,
         width_used,
@@ -34562,786 +34558,6 @@ def __get_linux_distribution():
     return line_tuple
 
 
-# =========================================================================#
-# MP""""""`MM                                                                dP                  dP
-# M  mmmmm..M                                                                88                  88
-# M.      `YM .d8888b. 88d888b. .d8888b. .d8888b. .d8888b. 88d888b. .d8888b. 88d888b. .d8888b. d8888P
-# MMMMMMM.  M 88'  `"" 88'  `88 88ooood8 88ooood8 88ooood8 88'  `88 Y8ooooo. 88'  `88 88'  `88   88
-# M. .MMM'  M 88.  ... 88       88.  ... 88.  ... 88.  ... 88    88       88 88    88 88.  .88   88
-# Mb.     .dM `88888P' dP       `88888P' `88888P' `88888P' dP    dP `88888P' dP    dP `88888P'   dP
-# MMMMMMMMMMM
-#
-# M"""""`'"""`YM                   oo
-# M  mm.  mm.  M
-# M  MMM  MMM  M .d8888b. .d8888b. dP .d8888b.
-# M  MMM  MMM  M 88'  `88 88'  `88 88 88'  `""
-# M  MMM  MMM  M 88.  .88 88.  .88 88 88.  ...
-# M  MMM  MMM  M `88888P8 `8888P88 dP `88888P'
-# MMMMMMMMMMMMMM               .88
-#                          d8888P
-# M#"""""""'M                    oo                      M""MMMMM""MM
-# ##  mmmm. `M                                           M  MMMMM  MM
-# #'        .M .d8888b. .d8888b. dP 88d888b. .d8888b.    M         `M .d8888b. 88d888b. .d8888b.
-# M#  MMMb.'YM 88ooood8 88'  `88 88 88'  `88 Y8ooooo.    M  MMMMM  MM 88ooood8 88'  `88 88ooood8
-# M#  MMMM'  M 88.  ... 88.  .88 88 88    88       88    M  MMMMM  MM 88.  ... 88       88.  ...
-# M#       .;M `88888P' `8888P88 dP dP    dP `88888P'    M  MMMMM  MM `88888P' dP       `88888P'
-# M#########M                .88                         MMMMMMMMMMMM
-#                        d8888P
-# =========================================================================#
-
-
-# =========================================================================#
-
-# MP""""""`MM   dP                       dP               .8888b
-# M  mmmmm..M   88                       88               88   "
-# M.      `YM d8888P .d8888b. 88d888b. d8888P    .d8888b. 88aaa
-# MMMMMMM.  M   88   88'  `88 88'  `88   88      88'  `88 88
-# M. .MMM'  M   88   88.  .88 88         88      88.  .88 88
-# Mb.     .dM   dP   `88888P8 dP         dP      `88888P' dP
-# MMMMMMMMMMM
-#
-# dP dP                     oo          dP dP
-# dP dP                                 dP dP
-#       88d8b.d8b. .d8888b. dP 88d888b.
-#       88'`88'`88 88'  `88 88 88'  `88
-#       88  88  88 88.  .88 88 88    88
-#       dP  dP  dP `88888P8 dP dP    dP
-#
-#
-# MM""""""""`M            dP
-# MM  mmmmmmmM            88
-# M`      MMMM 88d888b. d8888P 88d888b. dP    dP
-# MM  MMMMMMMM 88'  `88   88   88'  `88 88    88
-# MM  MMMMMMMM 88    88   88   88       88.  .88
-# MM        .M dP    dP   dP   dP       `8888P88
-# MMMMMMMMMMMM                               .88
-#                                        d8888P
-# MM"""""""`YM          oo            dP
-# MM  mmmmm  M                        88
-# M'        .M .d8888b. dP 88d888b. d8888P .d8888b.
-# MM  MMMMMMMM 88'  `88 88 88'  `88   88   Y8ooooo.
-# MM  MMMMMMMM 88.  .88 88 88    88   88         88
-# MM  MMMMMMMM `88888P' dP dP    dP   dP   `88888P'
-# MMMMMMMMMMMM
-
-# ==========================================================================#
-
-
-# M"""""`'"""`YM          oo
-# M  mm.  mm.  M
-# M  MMM  MMM  M .d8888b. dP 88d888b.
-# M  MMM  MMM  M 88'  `88 88 88'  `88
-# M  MMM  MMM  M 88.  .88 88 88    88
-# M  MMM  MMM  M `88888P8 dP dP    dP
-# MMMMMMMMMMMMMM
-#
-# MM"""""""`YM                     dP      MM'"""""`MM oo   dP   M""MMMMM""MM          dP
-# MM  mmmmm  M                     88      M' .mmm. `M      88   M  MMMMM  MM          88
-# M'        .M .d8888b. .d8888b. d8888P    M  MMMMMMMM dP d8888P M         `M dP    dP 88d888b.
-# MM  MMMMMMMM 88'  `88 Y8ooooo.   88      M  MMM   `M 88   88   M  MMMMM  MM 88    88 88'  `88
-# MM  MMMMMMMM 88.  .88       88   88      M. `MMM' .M 88   88   M  MMMMM  MM 88.  .88 88.  .88
-# MM  MMMMMMMM `88888P' `88888P'   dP      MM.     .MM dP   dP   M  MMMMM  MM `88888P' 88Y8888'
-# MMMMMMMMMMMM                             MMMMMMMMMMM           MMMMMMMMMMMM
-#
-# M""M
-# M  M
-# M  M .d8888b. .d8888b. dP    dP .d8888b.
-# M  M Y8ooooo. Y8ooooo. 88    88 88ooood8
-# M  M       88       88 88.  .88 88.  ...
-# M  M `88888P' `88888P' `88888P' `88888P'
-# MMMM
-
-
-def _github_issue_post_make_markdown(
-        issue_type,
-        operating_system,
-        os_ver,
-        psg_port,
-        psg_ver,
-        gui_ver,
-        python_ver,
-        python_exp,
-        prog_exp,
-        used_gui,
-        gui_notes,
-        cb_docs,
-        cb_demos,
-        cb_demo_port,
-        cb_readme_other,
-        cb_command_line,
-        cb_issues,
-        cb_latest_pypi,
-        cb_github,
-        detailed_desc,
-        code,
-        project_details,
-        where_found,
-):
-    body = """
-## Type of Issue (Enhancement, Error, Bug, Question)
-
-{}
-
-----------------------------------------
-
-## Environment 
-
-#### Operating System
-
-{}  version {}
-
-#### PySimpleGUI Port (tkinter, Qt, Wx, Web)
-
-{}
-
-----------------------------------------
-
-## Versions
-
-
-#### Python version (`sg.sys.version`)
-
-{}
-
-#### PySimpleGUI Version (`sg.__version__`)
-
-{}
-
-#### GUI Version  (tkinter (`sg.tclversion_detailed`), PySide2, WxPython, Remi)
-
-{}
-""".format(
-        issue_type,
-        operating_system,
-        os_ver,
-        psg_port,
-        python_ver,
-        psg_ver,
-        gui_ver,
-        project_details,
-    )
-
-    body2 = """
-
-
----------------------
-
-## Your Experience In Months or Years (optional)
-
-{} Years Python programming experience
-{} Years Programming experience overall
-{} Have used another Python GUI Framework? (tkinter, Qt, etc) (yes/no is fine)
-{}
-
----------------------
-
-## Troubleshooting
-
-These items may solve your problem. Please check those you've done by changing - [ ] to - [X]
-
-- [{}] Searched main docs for your problem  www.PySimpleGUI.org
-- [{}] Looked for Demo Programs that are similar to your goal. It is recommend you use the Demo Browser! Demos.PySimpleGUI.org
-- [{}] If not tkinter - looked for Demo Programs for specific port
-- [{}] For non tkinter - Looked at readme for your specific port if not PySimpleGUI (Qt, WX, Remi)
-- [{}] Run your program outside of your debugger (from a command line)
-- [{}] Searched through Issues (open and closed) to see if already reported Issues.PySimpleGUI.org
-- [{}] Upgraded to the latest official release of PySimpleGUI on PyPI
-- [{}] Tried using the PySimpleGUI.py file on GitHub. Your problem may have already been fixed but not released
-
-## Detailed Description
-
-{}
-
-#### Code To Duplicate
-
-
-```python
-{}
-
-
-```
-
-#### Screenshot, Sketch, or Drawing
-
-
-
-""".format(
-        python_exp,
-        prog_exp,
-        used_gui,
-        gui_notes,
-        cb_docs,
-        cb_demos,
-        cb_demo_port,
-        cb_readme_other,
-        cb_command_line,
-        cb_issues,
-        cb_latest_pypi,
-        cb_github,
-        detailed_desc,
-        code if len(code) > 10 else "# Paste your code here",
-    )
-
-    if project_details or where_found:
-        body2 += "------------------------"
-
-    if project_details:
-        body2 += """
-## Watcha Makin?
-{}
-""".format(str(project_details))
-
-    if where_found:
-        body2 += """
-## How did you find PySimpleGUI?
-{}
-""".format(str(where_found))
-    return body + body2
-
-
-def _github_issue_post_make_github_link(title, body):
-    pysimplegui_url = "https://github.com/PySimpleGUI/PySimpleGUI"
-    pysimplegui_issues = "{}/issues/new?".format(pysimplegui_url)
-
-    # Fix body cuz urllib can't do it smfh
-    getVars = {"title": str(title), "body": str(body)}
-    return pysimplegui_issues + urllib.parse.urlencode(getVars).replace("%5Cn", "%0D")
-
-
-#########################################################################################################
-
-
-def _github_issue_post_validate(values, checklist, issue_types):
-    issue_type = None
-    for itype in issue_types:
-        if values[itype]:
-            issue_type = itype
-            break
-    if issue_type is None:
-        popup_error("Must choose issue type", keep_on_top=True)
-        return False
-    if values["-OS WIN-"]:
-        os_ver = values["-OS WIN VER-"]
-    elif values["-OS LINUX-"]:
-        os_ver = values["-OS LINUX VER-"]
-    elif values["-OS MAC-"]:
-        os_ver = values["-OS MAC VER-"]
-    elif values["-OS OTHER-"]:
-        os_ver = values["-OS OTHER VER-"]
-    else:
-        popup_error("Must choose Operating System", keep_on_top=True)
-        return False
-
-    if os_ver == "":
-        popup_error("Must fill in an OS Version", keep_on_top=True)
-        return False
-
-    checkboxes = any([values[("-CB-", i)] for i in range(len(checklist))])
-    if not checkboxes:
-        popup_error(
-            "None of the checkboxes were checked.... you need to have tried something...anything...",
-            keep_on_top=True,
-        )
-        return False
-
-    title = values["-TITLE-"].strip()
-    if len(title) == 0:
-        popup_error("Title can't be blank", keep_on_top=True)
-        return False
-    elif title[1: len(title) - 1] == issue_type:
-        popup_error(
-            "Title can't be blank (only the type of issue isn't enough)",
-            keep_on_top=True,
-        )
-        return False
-
-    if len(values["-ML DETAILS-"]) < 4:
-        popup_error("A little more details would be awesome", keep_on_top=True)
-        return False
-
-    return True
-
-
-def _github_issue_help():
-    heading_font = "_ 12 bold underline"
-    text_font = "_ 10"
-
-    def HelpText(text):
-        return Text(text, size=(80, None), font=text_font)
-
-    help_why = """ Let's start with a review of the Goals of the PySimpleGUI project
-1. To have fun
-2. For you to be successful
-
-This form is as important as the documentation and the demo programs to meeting those goals.
-
-The GitHub Issue GUI is here to help you more easily log issues on the PySimpleGUI GitHub Repo. """
-
-    help_goals = """ The goals of using GitHub Issues for PySimpleGUI question, problems and suggestions are:
-* Give you direct access to engineers with the most knowledge of PySimpleGUI
-* Answer your questions in the most precise and correct way possible
-* Provide the highest quality solutions possible
-* Give you a checklist of things to try that may solve the problem
-* A single, searchable database of known problems and their workarounds
-* Provide a place for the PySimpleGUI project to directly provide support to users
-* A list of requested enhancements
-* An easy to use interface to post code and images
-* A way to track the status and have converstaions about issues
-* Enable multiple people to help users """
-
-    help_explain = """ GitHub does not provide a "form" that normal bug-tracking-databases provide. As a result, a form was created specifically for the PySimpleGUI project.
-
-The most obvious questions about this form are
-* Why is there a form? Other projects don't have one?
-* My question is an easy one, why does it still need a form?
-
-The answer is:
-I want you to get your question answered with the highest quality answer possible as quickly as possible.
-
-The longer answer - For quite a while there was no form. It resulted the same back and forth, multiple questions comversation.  "What version are you running?"  "What OS are you using?"  These waste precious time.
-
-If asking nicely helps... PLEASE ... please fill out the form.
-
-I can assure you that this form is not here to punish you. It doesn't exist to make you angry and frustrated.  It's not here for any purpose than to try and get you support and make PySimpleGUI better. """
-
-    help_experience = """ Not many Bug-tracking systems ask about you as a user. Your experience in programming, programming in Python and programming a GUI are asked to provide you with the best possible answer.  Here's why it's helpful.  You're a human being, with a past, and a some amount of experience.  Being able to taylor the reply to your issue in a way that fits you and your experience will result in a reply that's efficient and clear.  It's not something normally done but perhaps it should be. It's meant to provide you with a personal response.
-
-If you've been programming for a month, the person answering your question can answer your question in a way that's understandable to you.  Similarly, if you've been programming for 20 years and have used multiple Python GUI frameworks, then you are unlikely to need as much explanation.  You'll also have a richer GUI vocabularly. It's meant to try and give you a peronally crafted response that's on your wavelength. Fun & success... Remember those are our shared goals"""
-
-    help_steps = """ The steps to log an issue are:
-1. Fill in the form
-2. Click Post Issue """
-
-    # layout = [  [T('Goals', font=heading_font, pad=(0,0))],
-    #             [HelpText(help_goals)],
-    #             [T('Why?', font=heading_font, pad=(0,0))],
-    #             [HelpText(help_why)],
-    #             [T('FAQ', font=heading_font, pad=(0,0))],
-    #             [HelpText(help_explain)],
-    #             [T('Experience (optional)', font=heading_font)],
-    #             [HelpText(help_experience)],
-    #             [T('Steps', font=heading_font, pad=(0,0))],
-    #             [HelpText(help_steps)],
-    #             [B('Close')]]
-
-    t_goals = Tab("Goals", [[HelpText(help_goals)]])
-    t_why = Tab("Why", [[HelpText(help_why)]])
-    t_faq = Tab("FAQ", [[HelpText(help_explain)]])
-    t_exp = Tab("Experience", [[HelpText(help_experience)]])
-    t_steps = Tab("Steps", [[HelpText(help_steps)]])
-
-    layout = [[TabGroup([[t_goals, t_why, t_faq, t_exp, t_steps]])], [B("Close")]]
-
-    Window("GitHub Issue GUI Help", layout, keep_on_top=True).read(close=True)
-
-    return
-
-
-def main_open_github_issue():
-    font_frame = "_ 14"
-    issue_types = ("Question", "Bug", "Enhancement", "Error Message")
-    frame_type = [
-        [Radio(t, 1, size=(10, 1), enable_events=True, k=t)] for t in issue_types
-    ]
-
-    v_size = (15, 1)
-    frame_versions = [
-        [T("Python", size=v_size), In(sys.version, size=(20, 1), k="-VER PYTHON-")],
-        [T("PySimpleGUI", size=v_size), In(ver, size=(20, 1), k="-VER PSG-")],
-        [
-            T("tkinter", size=v_size),
-            In(tclversion_detailed, size=(20, 1), k="-VER TK-"),
-        ],
-    ]
-
-    frame_platforms = [
-        [T("OS                 "), T("Details")],
-        [
-            Radio("Windows", 2, running_windows(), size=(8, 1), k="-OS WIN-"),
-            In(size=(8, 1), k="-OS WIN VER-"),
-        ],
-        [
-            Radio("Linux", 2, running_linux(), size=(8, 1), k="-OS LINUX-"),
-            In(size=(8, 1), k="-OS LINUX VER-"),
-        ],
-        [
-            Radio("Mac", 2, running_mac(), size=(8, 1), k="-OS MAC-"),
-            In(size=(8, 1), k="-OS MAC VER-"),
-        ],
-        [
-            Radio("Other", 2, size=(8, 1), k="-OS OTHER-"),
-            In(size=(8, 1), k="-OS OTHER VER-"),
-        ],
-    ]
-
-    col_experience = [
-        [T("Optional Experience Info")],
-        [In(size=(4, 1), k="-EXP PROG-"), T("Years Programming")],
-        [In(size=(4, 1), k="-EXP PYTHON-"), T("Years Writing Python")],
-        [CB("Previously programmed a GUI", k="-CB PRIOR GUI-")],
-        [T("Share more if you want....")],
-        [In(size=(25, 1), k="-EXP NOTES-", expand_x=True)],
-    ]
-
-    checklist = (
-        ("Searched main docs for your problem", "www.PySimpleGUI.org"),
-        (
-            "Looked for Demo Programs that are similar to your goal.\nIt is recommend you use the Demo Browser!",
-            "https://Demos.PySimpleGUI.org",
-        ),
-        ("If not tkinter - looked for Demo Programs for specific port", ""),
-        (
-            "For non tkinter - Looked at readme for your specific port if not PySimpleGUI (Qt, WX, Remi)",
-            "",
-        ),
-        ("Run your program outside of your debugger (from a command line)", ""),
-        (
-            "Searched through Issues (open and closed) to see if already reported",
-            "https://Issues.PySimpleGUI.org",
-        ),
-        (
-            "Upgraded to the latest official release of PySimpleGUI on PyPI",
-            "https://Upgrading.PySimpleGUI.org",
-        ),
-        (
-            "Tried using the PySimpleGUI.py file on GitHub. Your problem may have already been fixed but not released.",
-            "",
-        ),
-    )
-
-    checklist_col1 = Col(
-        [
-            [CB(c, k=("-CB-", i)), T(t, k="-T{}-".format(i), enable_events=True)]
-            for i, (c, t) in enumerate(checklist[:4])
-        ],
-        k="-C FRAME CBs1-",
-    )
-    checklist_col2 = Col(
-        [
-            [
-                CB(c, k=("-CB-", i + 4)),
-                T(t, k="-T{}-".format(i + 4), enable_events=True),
-            ]
-            for i, (c, t) in enumerate(checklist[4:])
-        ],
-        pad=(0, 0),
-        k="-C FRAME CBs2-",
-    )
-    checklist_tabgropup = TabGroup(
-        [
-            [
-                Tab("Checklist 1 *", [[checklist_col1]], expand_x=True, expand_y=True),
-                Tab("Checklist 2  *", [[checklist_col2]]),
-                Tab("Experience", col_experience, k="-Tab Exp-", pad=(0, 0)),
-            ]
-        ],
-        expand_x=True,
-        expand_y=True,
-    )
-
-    frame_details = [
-        [
-            Multiline(
-                size=(65, 10),
-                font="Courier 10",
-                k="-ML DETAILS-",
-                expand_x=True,
-                expand_y=True,
-            )
-        ]
-    ]
-
-    tooltip_project_details = "If you care to share a little about your project,\nthen by all means tell us what you are making!"
-    frame_project_details = [
-        [
-            Multiline(
-                size=(65, 10),
-                font="Courier 10",
-                k="-ML PROJECT DETAILS-",
-                expand_x=True,
-                expand_y=True,
-                tooltip=tooltip_project_details,
-            )
-        ]
-    ]
-
-    tooltip_where_find_psg = "Where did you learn about PySimpleGUI?"
-    frame_where_you_found_psg = [
-        [
-            Multiline(
-                size=(65, 10),
-                font="Courier 10",
-                k="-ML FOUND PSG-",
-                expand_x=True,
-                expand_y=True,
-                tooltip=tooltip_where_find_psg,
-            )
-        ]
-    ]
-
-    tooltip_code = "A short program that can be immediately run will considerably speed up getting you quality help."
-    frame_code = [
-        [
-            Multiline(
-                size=(80, 10),
-                font="Courier 8",
-                k="-ML CODE-",
-                expand_x=True,
-                expand_y=True,
-                tooltip=tooltip_code,
-            )
-        ]
-    ]
-
-    frame_markdown = [
-        [
-            Multiline(
-                size=(80, 10),
-                font="Courier 8",
-                k="-ML MARKDOWN-",
-                expand_x=True,
-                expand_y=True,
-            )
-        ]
-    ]
-
-    top_layout = [
-        [
-            Col(
-                [[Text("Open A GitHub Issue (* = Required Info)", font="_ 15")]],
-                expand_x=True,
-            ),
-            Col([[B("Help")]]),
-        ],
-        [
-            Frame(
-                "Title *",
-                [[Input(k="-TITLE-", size=(50, 1), font="_ 14", focus=True)]],
-                font=font_frame,
-            )
-        ],
-        # Image(data=EMOJI_BASE64_WEARY)],
-        vtop(
-            [
-                Frame("Platform *", frame_platforms, font=font_frame),
-                Frame("Type of Issue *", frame_type, font=font_frame),
-                Frame("Versions *", frame_versions, font=font_frame),
-            ]
-        ),
-    ]
-
-    middle_layout = [
-        [
-            Frame(
-                "Checklist * (note that you can click the links)",
-                [[checklist_tabgropup]],
-                font=font_frame,
-                k="-CLIST FRAME-",
-                expand_x=True,
-                expand_y=True,
-            )
-        ],
-        [HorizontalSeparator()],
-        [
-            T(
-                SYMBOL_DOWN
-                + " If you need more room for details grab the dot and drag to expand",
-                background_color="red",
-                text_color="white",
-            )
-        ],
-    ]
-
-    bottom_layout = [
-        [
-            TabGroup(
-                [
-                    [
-                        Tab("Details *\n", frame_details, pad=(0, 0)),
-                        Tab(
-                            "SHORT Program\nto duplicate problem *",
-                            frame_code,
-                            pad=(0, 0),
-                        ),
-                        Tab(
-                            "Your Project Details\n(optional)",
-                            frame_project_details,
-                            pad=(0, 0),
-                        ),
-                        Tab(
-                            "Where you found us?\n(optional)",
-                            frame_where_you_found_psg,
-                            pad=(0, 0),
-                        ),
-                        Tab("Markdown Output\n", frame_markdown, pad=(0, 0)),
-                    ]
-                ],
-                k="-TABGROUP-",
-                expand_x=True,
-                expand_y=True,
-            ),
-        ]
-    ]
-
-    layout_pane = Pane(
-        [Col(middle_layout), Col(bottom_layout)],
-        key="-PANE-",
-        expand_x=True,
-        expand_y=True,
-    )
-
-    layout = [
-        [
-            pin(
-                B(
-                    SYMBOL_DOWN,
-                    pad=(0, 0),
-                    k="-HIDE CLIST-",
-                    tooltip="Hide/show upper sections of window",
-                )
-            ),
-            pin(Col(top_layout, k="-TOP COL-")),
-        ],
-        [layout_pane],
-        [Col([[B("Post Issue"), B("Create Markdown Only"), B("Quit")]])],
-    ]
-
-    window = Window(
-        "Open A GitHub Issue",
-        layout,
-        finalize=True,
-        resizable=True,
-        enable_close_attempted_event=True,
-        margins=(0, 0),
-    )
-
-    # for i in range(len(checklist)):
-    [window["-T{}-".format(i)].set_cursor("hand1") for i in range(len(checklist))]
-    # window['-TABGROUP-'].expand(True, True, True)
-    # window['-ML CODE-'].expand(True, True, True)
-    # window['-ML DETAILS-'].expand(True, True, True)
-    # window['-ML MARKDOWN-'].expand(True, True, True)
-    # window['-PANE-'].expand(True, True, True)
-
-    if running_mac():
-        window["-OS MAC VER-"].update(platform.mac_ver())
-    elif running_windows():
-        window["-OS WIN VER-"].update(platform.win32_ver())
-    elif running_linux():
-        window["-OS LINUX VER-"].update(platform.libc_ver())
-
-    window.bring_to_front()
-    while True:  # Event Loop
-        event, values = window.read()
-        # print(event, values)
-        if event in (WINDOW_CLOSE_ATTEMPTED_EVENT, "Quit"):
-            if (
-                    popup_yes_no(
-                        "Do you really want to exit?",
-                        'If you have not clicked Post Issue button and then clicked "Submit New Issue" button '
-                        "then your issue will not have been submitted to GitHub.\n"
-                        "If you are having trouble with PySimpleGUI opening your browser, consider generating "
-                        "the markdown, copying it to a text file, and then using it later to manually paste into a new issue "
-                        "\n"
-                        "Are you sure you want to quit?",
-                        image=EMOJI_BASE64_PONDER,
-                        keep_on_top=True,
-                    )
-                    == "Yes"
-            ):
-                break
-        if event == WIN_CLOSED:
-            break
-        if event in ["-T{}-".format(i) for i in range(len(checklist))]:
-            webbrowser.open_new_tab(window[event].get())
-        if event in issue_types:
-            title = str(values["-TITLE-"])
-            if len(title) != 0:
-                if title[0] == "[" and title.find("]"):
-                    title = title[title.find("]") + 1:]
-                    title = title.strip()
-            window["-TITLE-"].update("[{}] {}".format(event, title))
-        if event == "-HIDE CLIST-":
-            window["-TOP COL-"].update(visible=not window["-TOP COL-"].visible)
-            window["-HIDE CLIST-"].update(
-                text=SYMBOL_UP
-                if window["-HIDE CLIST-"].get_text() == SYMBOL_DOWN
-                else SYMBOL_DOWN
-            )
-        if event == "Help":
-            _github_issue_help()
-        elif event in ("Post Issue", "Create Markdown Only"):
-            issue_type = None
-            for itype in issue_types:
-                if values[itype]:
-                    issue_type = itype
-                    break
-            if issue_type is None:
-                popup_error("Must choose issue type", keep_on_top=True)
-                continue
-            if values["-OS WIN-"]:
-                operating_system = "Windows"
-                os_ver = values["-OS WIN VER-"]
-            elif values["-OS LINUX-"]:
-                operating_system = "Linux"
-                os_ver = values["-OS LINUX VER-"]
-            elif values["-OS MAC-"]:
-                operating_system = "Mac"
-                os_ver = values["-OS MAC VER-"]
-            elif values["-OS OTHER-"]:
-                operating_system = "Other"
-                os_ver = values["-OS OTHER VER-"]
-            else:
-                popup_error("Must choose Operating System", keep_on_top=True)
-                continue
-            checkboxes = [
-                "X" if values[("-CB-", i)] else " " for i in range(len(checklist))
-            ]
-
-            if not _github_issue_post_validate(values, checklist, issue_types):
-                continue
-
-            cb_dict = {
-                "cb_docs": checkboxes[0],
-                "cb_demos": checkboxes[1],
-                "cb_demo_port": checkboxes[2],
-                "cb_readme_other": checkboxes[3],
-                "cb_command_line": checkboxes[4],
-                "cb_issues": checkboxes[5],
-                "cb_latest_pypi": checkboxes[6],
-                "cb_github": checkboxes[7],
-                "detailed_desc": values["-ML DETAILS-"],
-                "code": values["-ML CODE-"],
-                "project_details": values["-ML PROJECT DETAILS-"].rstrip(),
-                "where_found": values["-ML FOUND PSG-"],
-            }
-
-            markdown = _github_issue_post_make_markdown(
-                issue_type,
-                operating_system,
-                os_ver,
-                "tkinter",
-                values["-VER PSG-"],
-                values["-VER TK-"],
-                values["-VER PYTHON-"],
-                values["-EXP PYTHON-"],
-                values["-EXP PROG-"],
-                "Yes" if values["-CB PRIOR GUI-"] else "No",
-                values["-EXP NOTES-"],
-                **cb_dict,
-            )
-            window["-ML MARKDOWN-"].update(markdown)
-            link = _github_issue_post_make_github_link(
-                values["-TITLE-"], window["-ML MARKDOWN-"].get()
-            )
-            if event == "Post Issue":
-                webbrowser.open_new_tab(link)
-            else:
-                popup("Your markdown code is in the Markdown tab", keep_on_top=True)
-
-    window.close()
-
-
 def _main_entry_point():
     # print('Restarting main as a new process...(needed in case you want to GitHub Upgrade)')
     # Relaunch using the same python interpreter that was used to run this function
@@ -36993,10 +36209,7 @@ def main():
             window.minimize()
             main_open_github_issue()
             window.normal()
-        elif event == "Show Notification Again":
-            if not running_trinket():
-                pysimplegui_user_settings.set("-upgrade info seen-", False)
-            __show_previous_upgrade_information()
+
         elif event == "-UPGRADE SHOW ONLY CRITICAL-":
             if not running_trinket():
                 pysimplegui_user_settings.set(
