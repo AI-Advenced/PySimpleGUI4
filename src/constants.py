@@ -10,7 +10,7 @@ ver = version
 
 # INFO START
 port = "PySimpleGUI"
-__license__ = "MIT License"
+__license__ = "GPL-3.0 license"
 __author__ = "yunluo"
 __email__ = "sp91@qq.com"
 # INFO END
