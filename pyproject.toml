@@ -7,7 +7,7 @@ name = "PySimpleGUI4"
 dynamic = ["version"]
 description = "The free-forever and simple Python GUI framework"
 readme = "README.md"
-license = "MIT"
+license = "GPL-3.0"
 authors = [
     { name = "yunluo", email = "sp91@qq.com" }
 ]
