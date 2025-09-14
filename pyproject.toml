@@ -25,4 +25,4 @@ urls = { Source = "https://github.com/yunluo/PySimpleGUI4" }
 
 [tool.hatch.version]
 path = "PySimpleGUI4.py"
-pattern = "version = [\"'](?P<version>[^\"']+)[\"']"
+pattern = "__version__ = [\"'](?P<version>[^\"']+)[\"']"
