@@ -64,7 +64,7 @@ try:
 except ImportError:
     webbrowser_available = False
 
-version = "4.80.3"
+version = "4.80.4"
 
 _change_log = """
     Changelog since 4.70.1 released to PyPI on 20-Jul-2024
