@@ -1,4 +1,3 @@
-from ..core import Element
 from ..constants import *
 
 
@@ -168,7 +167,7 @@ class TKCalendar(ttk.Frame):
         item = widget.identify_row(y)
         column = widget.identify_column(x)
 
-        if not column or not item in self._items:
+        if not column or item not in self._items:
             # clicked in the weekdays row or just outside the columns
             return
 

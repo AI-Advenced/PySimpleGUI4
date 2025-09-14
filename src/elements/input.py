@@ -282,7 +282,7 @@ class Input(Element):
         if ibeam_color is not None:
             try:
                 self.Widget.config(insertbackground=ibeam_color)
-            except Exception as e:
+            except Exception:
                 _error_popup_with_traceback(
                     "Error setting I-Beam color in set_ibeam_color",
                     "The element has a key:",

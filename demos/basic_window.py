@@ -1,11 +1,10 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
 import PySimpleGUI4 as sg
-from pyguievent import PySimpleEvent
 
 sg.theme("DefaultNoMoreNagging")
 
-app = PySimpleEvent()
+app = sg.PySimpleEvent()
 
 
 def make_main_window() -> sg.Window:
@@ -55,12 +54,7 @@ def make_main_window() -> sg.Window:
 
 
 def on_about():
-    sg.popup(
-        "软件说明：",
-        "关于事件，点击菜单关于启动",
-        title="关于程序",
-        keep_on_top=True,
-    )
+    sg.popup("软件说明：", "关于事件，点击菜单关于启动", title="关于程序")
 
 
 @app.bind_event("保存配置")
@@ -99,6 +93,7 @@ def on_win_fun(window: sg.Window):
         keep_on_top=True,
     )
     window["lot2"].set_focus(force=True)
+    sg._logger.info("sdfgsdf")
 
 
 @app.bind_event("val_fun")

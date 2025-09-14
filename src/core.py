@@ -1,57 +1,32 @@
 import tkinter as tk
 from tkinter import ttk
-from typing import Any, Union, Tuple, Optional, Dict, List
-import copy
 import warnings
 
 
 # all of the tkinter involved imports
-import tkinter as tk
 
 # import tkinter.scrolledtext as tkst
 import tkinter.font
-from tkinter import filedialog
-from tkinter import ttk
-from tkinter.colorchooser import askcolor
 
 # end of tkinter specific imports
 # get the tkinter detailed version
 tclversion_detailed = tkinter.Tcl().eval("info patchlevel")
 framework_version = tclversion_detailed
 
-import time
 import pickle
 import calendar
 import datetime
-import textwrap
 
-import socket
-from hashlib import sha256 as hh
-import inspect
 import traceback
 import difflib
-import copy
 import pprint
 
 try:  # Because Raspberry Pi is still on 3.4....it's not critical if this module isn't imported on the Pi
-    from typing import (
-        List,
-        Any,
-        Union,
-        Tuple,
-        Dict,
-        SupportsAbs,
-        Optional,
-    )  # because this code has to run on 2.7 can't use real type hints.  Must do typing only in comments
+    pass  # because this code has to run on 2.7 can't use real type hints.  Must do typing only in comments
 except Exception:
     print(
         '*** Skipping import of Typing module. "pip3 install typing" to remove this warning ***'
     )
-import random
-import warnings
-from math import floor
-from math import fabs
-from functools import wraps
 
 try:  # Because Raspberry Pi is still on 3.4....
     import subprocess
@@ -59,19 +34,15 @@ except Exception as e:
     print("** Import error {} **".format(e))
 
 import threading
-import itertools
 import json
 import configparser
 import queue
 
 try:
-    import webbrowser
-
     webbrowser_available = True
 except Exception:
     webbrowser_available = False
 
-import pydoc
 import os
 import sys
 import ctypes
@@ -782,7 +753,7 @@ class Element:
                 bind_string,
                 lambda evt: self._user_bind_callback(bind_string, evt, propagate),
             )
-        except Exception as e:
+        except Exception:
             self.Widget.unbind_all(bind_string)
             return
 
@@ -3726,7 +3697,7 @@ class Window:
                 bind_string,
                 lambda evt: self._user_bind_callback(bind_string, evt, propagate),
             )
-        except Exception as e:
+        except Exception:
             self.TKroot.unbind_all(bind_string)
             return
             # _error_popup_with_traceback('Window.bind error', e)
@@ -4598,7 +4569,7 @@ class UserSettings:
             self.config.remove_option(section=self.section_name, option=item)
             try:
                 del self.section_dict[item]
-            except Exception as e:
+            except Exception:
                 pass
                 # print(e)
             if self.user_settings_parent.autosave:
@@ -5273,7 +5244,7 @@ class _Debugger:
 
             try:
                 result = eval("{}".format(cmd), myglobals, mylocals)
-            except Exception as e:
+            except Exception:
                 if sys.version_info[0] < 3:
                     result = "Not available in Python 2"
                 else:
@@ -5306,7 +5277,7 @@ class _Debugger:
             var = values["_VAR{}_".format(event[4])]
             try:
                 result = ObjToStringSingleObj(mylocals[var])
-            except Exception as e:
+            except Exception:
                 try:
                     result = eval("{}".format(var), myglobals, mylocals)
                     result = ObjToStringSingleObj(result)
@@ -5383,7 +5354,7 @@ class _Debugger:
                 slot += 1
 
             if (
-                slot + int(not self.custom_watch in (None, ""))
+                slot + int(self.custom_watch not in (None, ""))
                 >= _Debugger.NUM_AUTO_WATCH
             ):
                 break
@@ -6651,7 +6622,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                     element.TKColFrame.canvas.bind(
                         "<B1-Motion>", toplevel_form._OnMotionGrabAnywhere
                     )
-        except Exception as e:
+        except Exception:
             pass
             # print(e)
 
@@ -6886,7 +6857,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                             element.TKColFrame.canvas.config(height=element.Size[1])
                         elif element.Size[0] is not None:
                             element.TKColFrame.canvas.config(width=element.Size[0])
-                    if not element.BackgroundColor in (None, COLOR_SYSTEM_DEFAULT):
+                    if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                         element.TKColFrame.canvas.config(
                             background=element.BackgroundColor
                         )
@@ -6916,7 +6887,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                             element.TKColFrame.canvas.config(height=element.Size[1])
                         elif element.Size[0] is not None:
                             element.TKColFrame.canvas.config(width=element.Size[0])
-                        if not element.BackgroundColor in (None, COLOR_SYSTEM_DEFAULT):
+                        if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                             element.TKColFrame.canvas.config(
                                 background=element.BackgroundColor
                             )
@@ -7933,7 +7904,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                                 element.TextColor,
                             )
                         )
-                except Exception as e:
+                except Exception:
                     pass  # going to let this one slide
 
                 # Chr0nic
@@ -8487,7 +8458,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                 )
                 if element.ChangeSubmits:
                     element.TKRadio.configure(command=element._RadioHandler)
-                if not element.BackgroundColor in (None, COLOR_SYSTEM_DEFAULT):
+                if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                     element.TKRadio.configure(background=element.BackgroundColor)
                     element.TKRadio.configure(selectcolor=element.CircleBackgroundColor)
                     element.TKRadio.configure(activebackground=element.BackgroundColor)
@@ -8627,7 +8598,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                         width, height = element_size
                     element.tktext_label.config(image=photo, width=width, height=height)
 
-                if not element.BackgroundColor in (None, COLOR_SYSTEM_DEFAULT):
+                if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                     element.tktext_label.config(background=element.BackgroundColor)
 
                 element.tktext_label.image = photo
@@ -10138,7 +10109,7 @@ def _set_icon_for_tkinter_window(root, icon=None, pngbase64=None):
     wicon = icon
     try:
         root.iconbitmap(icon)
-    except Exception as e:
+    except Exception:
         try:
             wicon = tkinter.PhotoImage(file=icon)
             root.tk.call("wm", "iconphoto", root._w, wicon)
@@ -10793,7 +10764,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
                     try:
                         items = element.TKListbox.curselection()
                         value = [element.Values[int(item)] for item in items]
-                    except Exception as e:
+                    except Exception:
                         value = ""
                 elif element.Type == ELEM_TYPE_INPUT_SPIN:
                     try:

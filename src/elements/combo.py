@@ -291,7 +291,7 @@ class Combo(Element):
                         self._dropdown_newfont,
                     )
                 )
-        except Exception as e:
+        except Exception:
             pass  # going to let this one slide
 
         if not visible:

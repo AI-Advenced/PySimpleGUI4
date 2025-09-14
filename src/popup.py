@@ -1,5 +1,5 @@
 from .core import Window
-from .elements import Text, Button, Input
+from .elements import Text, Button
 from .constants import *
 
 

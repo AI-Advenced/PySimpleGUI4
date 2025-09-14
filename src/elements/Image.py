@@ -198,7 +198,7 @@ class Image(Element):
                     image = image.subsample(subsample)
                 if zoom is not None:
                     image = image.zoom(int(zoom))
-            except Exception as e:
+            except Exception:
                 image = data
                 # return  # an error likely means the window has closed so exit
 
@@ -264,14 +264,14 @@ class Image(Element):
                         self.AnimatedFrames.append(
                             tk.PhotoImage(file=source, format="gif -index %i" % i)
                         )
-                    except Exception as e:
+                    except Exception:
                         break
                 else:
                     try:
                         self.AnimatedFrames.append(
                             tk.PhotoImage(data=source, format="gif -index %i" % i)
                         )
-                    except Exception as e:
+                    except Exception:
                         break
             self.TotalAnimatedFrames = len(self.AnimatedFrames)
             self.LastFrameTime = time.time()

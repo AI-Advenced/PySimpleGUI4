@@ -10,6 +10,7 @@ import difflib
 import inspect
 import itertools
 import json
+import logging
 import os
 import pickle
 import platform
@@ -19,6 +20,7 @@ import queue
 import random
 import socket
 import sys
+import subprocess
 import textwrap
 import threading
 import time
@@ -26,53 +28,48 @@ import tkinter as tk
 import tkinter.font
 import traceback
 import warnings
+import webbrowser
 from functools import wraps
 from math import floor, fabs
 from tkinter import ttk
 
 # get the tkinter detailed version
 tclversion_detailed = tkinter.Tcl().eval("info patchlevel")
-framework_version = tclversion_detailed
 # end of tkinter specific imports
+
+_logger = logging.getLogger(__name__)
+_logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+_logger.addHandler(handler)
 
 try:  # Because Raspberry Pi is still on 3.4....it's not critical if this module isn't imported on the Pi
     from typing import (
         List,
         Any,
+        Callable,
         Union,
         Tuple,
         Dict,
-        SupportsAbs,
         Optional,
     )  # because this code has to run on 2.7 can't use real type hints.  Must do typing only in comments
 except ImportError:
-    print(
+    List = None
+    Any = None
+    Callable = None
+    Union = None
+    Tuple = None
+    Dict = None
+    Optional = None
+    _logger.info(
         '*** Skipping import of Typing module. "pip3 install typing" to remove this warning ***'
     )
 
-try:  # Because Raspberry Pi is still on 3.4....
-    import subprocess
-except ImportError:
-    print("** Import error **")
-
-try:
-    import webbrowser
-
-    webbrowser_available = True
-except ImportError:
-    webbrowser = None
-    webbrowser_available = False
-
-version = "4.80.5"
-
-
-__version__ = version  # For PEP 396 and PEP 345
-
-# The shortened version of version
-ver = version
 
 # INFO START
 port = "PySimpleGUI"
+__version__ = "4.80.5"
 __license__ = "GPL-3.0-or-later"
 __author__ = "yunluo"
 __email__ = "sp91@qq.com"
@@ -204,7 +201,7 @@ def _timeit(func):
         start = time.time()
         result = func(*args, **kwargs)
         end = time.time()
-        print("{} executed in {:.4f} seconds".format(func.__name__, end - start))
+        _logger.info("{} executed in {:.4f} seconds".format(func.__name__, end - start))
         return result
 
     return wrapper
@@ -236,7 +233,7 @@ def _timeit_summary(func):
         _timeit_counter += 1
         _timeit_total += end - start
         if _timeit_counter > MAX_TIMEIT_COUNT:
-            print(
+            _logger.info(
                 "{} executed in {:.4f} seconds".format(
                     func.__name__, _timeit_total / MAX_TIMEIT_COUNT
                 )
@@ -2001,7 +1998,7 @@ class ToolTip:
             if _mac_should_apply_notitlebar_patch():
                 self.tipwindow.wm_overrideredirect(False)
         except Exception as e:
-            print("* Error performing wm_overrideredirect in showtip *", e)
+            print("* Error performing wm_overrideredirect in showtip *,{}".format(e))
         self.tipwindow.wm_geometry("+%d+%d" % (x, y))
         self.tipwindow.wm_attributes("-topmost", 1)
 
@@ -2724,7 +2721,9 @@ class Element:
             if size[0] is not None:
                 self.Widget.config(width=size[0])
         except Exception:
-            print("Warning, error setting width on element with key=", self.Key)
+            _logger.info(
+                "Warning, error setting width on element with key={}".format(self.Key)
+            )
         try:
             if size[1] is not None:
                 self.Widget.config(height=size[1])
@@ -2732,7 +2731,11 @@ class Element:
             try:
                 self.Widget.config(length=size[1])
             except Exception:
-                print("Warning, error setting height on element with key=", self.Key)
+                _logger.info(
+                    "Warning, error setting height on element with key={}".format(
+                        self.Key
+                    )
+                )
 
         if self.Type == ELEM_TYPE_GRAPH:
             self.CanvasSize = size
@@ -2747,7 +2750,7 @@ class Element:
             w = self.Widget.winfo_width()
             h = self.Widget.winfo_height()
         except Exception:
-            print("Warning, error getting size of element", self.Key)
+            _logger.info("Warning, error getting size of element:{}".format(self.Key))
             w = h = None
         return w, h
 
@@ -2759,7 +2762,9 @@ class Element:
         try:
             self.ParentRowFrame.pack_forget()
         except Exception:
-            print("Warning, error hiding element row for key =", self.Key)
+            _logger.info(
+                "Warning, error hiding element row for key ={}".format(self.Key)
+            )
 
     def unhide_row(self):
         """
@@ -2769,7 +2774,9 @@ class Element:
         try:
             self.ParentRowFrame.pack()
         except Exception:
-            print("Warning, error hiding element row for key =", self.Key)
+            _logger.info(
+                "Warning, error hiding element row for key ={}".format(self.Key)
+            )
 
     def expand(self, expand_x=False, expand_y=False, expand_row=True):
         """
@@ -2818,13 +2825,13 @@ class Element:
                 self.Widget.config(cursor=cursor)
             except Exception as e:
                 print("Warning bad cursor specified ", cursor)
-                print(e)
+                _logger.info(e)
         if cursor_color is not None:
             try:
                 self.Widget.config(insertbackground=cursor_color)
             except Exception as e:
                 print("Warning bad cursor color", cursor_color)
-                print(e)
+                _logger.info(e)
 
     def set_vscroll_position(self, percent_from_top):
         """
@@ -2840,8 +2847,8 @@ class Element:
         try:
             widget.yview_moveto(percent_from_top)
         except Exception as e:
-            print("Warning setting the vertical scroll (yview_moveto failed)")
-            print(e)
+            _logger.info("Warning setting the vertical scroll (yview_moveto failed)")
+            _logger.info(e)
 
     def _widget_was_created(self):
         """
@@ -3013,7 +3020,7 @@ class Element:
             except ImportError:
                 pil_imported = False
                 pil_import_attempted = True
-                print("FAILED TO IMPORT PIL!")
+                _logger.info("FAILED TO IMPORT PIL!")
                 return
         try:
             # Add a little to the X direction if window has a titlebar
@@ -3027,7 +3034,7 @@ class Element:
             grab = ImageGrab.grab(bbox=rect)
             # Save the grabbed image to disk
         except Exception as e:
-            # print(e)
+            # _logger.info(e)
             popup_error_with_traceback(
                 "Screen capture failure",
                 "Error happened while trying to save screencapture of an element",
@@ -3105,7 +3112,7 @@ class Element:
         If you call update, you must call window.refresh if you want the change to happen prior to your next
         window.read() call. Normally uou don't do this as the window.read call is likely going to happen next.
         """
-        print(
+        _logger.info(
             "* Base Element Class update was called. Your element does not seem to have an update method"
         )
 
@@ -4226,7 +4233,11 @@ class Listbox(Element):
             try:
                 self.TKListbox.config(selectmode=select_mode)
             except Exception:
-                print("Listbox.update error trying to change mode to: ", select_mode)
+                _logger.info(
+                    "Listbox.update error trying to change mode to: {}".format(
+                        select_mode
+                    )
+                )
         if visible is not None:
             self._visible = visible
 
@@ -4579,7 +4590,7 @@ class Radio(Element):
                     if self.TKIntVar.get() == self.EncodedRadioValue:
                         self.TKIntVar.set(0)
             except Exception:
-                print("Error updating Radio")
+                _logger.info("Error updating Radio")
             self.InitialState = value
         if text is not None:
             self.Text = str(text)
@@ -4872,7 +4883,7 @@ class Checkbox(Element):
                 self.TKIntVar.set(value)
                 self.InitialState = value
             except Exception:
-                print("Checkbox update failed")
+                _logger.info("Checkbox update failed")
         if disabled:
             self.TKCheckbutton.configure(state="disabled")
         elif not disabled:
@@ -5523,7 +5534,9 @@ class Multiline(Element):
                     if font_for_value is not None:
                         self.TKText.tag_configure(tag, font=font_for_value)
                 except Exception as e:
-                    print("* Multiline.update - bad color likely specified:", e)
+                    _logger.info(
+                        "* Multiline.update - bad color likely specified:{}".format(e)
+                    )
             if self.Disabled:
                 self.TKText.configure(state="normal")
             try:
@@ -5537,7 +5550,7 @@ class Multiline(Element):
                 # self.TKText.tag_add(just_tag, starting_point, starting_point)
 
             except Exception as e:
-                print("* Error setting multiline *", e)
+                _logger.info("* Error setting multiline *:{}".format(e))
             if self.Disabled:
                 self.TKText.configure(state="disabled")
             self.DefaultText = value
@@ -5663,7 +5676,11 @@ class Multiline(Element):
                 else:  # if no "on" then assume the color string is just the text color
                     kw_text_color = dual_color
         except Exception as e:
-            print("* multiline print warning * you messed up with color formatting", e)
+            _logger.info(
+                "* multiline print warning * you messed up with color formatting:{}".format(
+                    e
+                )
+            )
 
         _print_to_element(
             self,
@@ -6189,7 +6206,11 @@ class Text(Element):
                 else:  # if no "on" then assume the color string is just the text color
                     kw_text_color = dual_color
         except Exception as e:
-            print("* multiline print warning * you messed up with color formatting", e)
+            _logger.info(
+                "* multiline print warning * you messed up with color formatting:{}".format(
+                    e
+                )
+            )
 
         self._print_to_element(
             *args,
@@ -6813,28 +6834,9 @@ class Button(Element):
         self.Target = target
         self.ButtonText = str(button_text)
         self.RightClickMenu = right_click_menu
-        # Button colors can be a tuple (text, background) or a string with format "text on background"
-        # bc = button_color
-        # if button_color is None:
-        #     bc = DEFAULT_BUTTON_COLOR
-        # else:
-        #     try:
-        #         if isinstance(button_color,str):
-        #             bc = button_color.split(' on ')
-        #     except Exception as e:
-        #         print('* cprint warning * you messed up with color formatting', e)
-        #     if bc[1] is None:
-        #         bc = (bc[0], theme_button_color()[1])
-        # self.ButtonColor = bc
+
         self.ButtonColor = button_color_to_tuple(button_color)
 
-        # experimental code to compute disabled button text color
-        # if disabled_button_color is None:
-        #     try:
-        #         disabled_button_color = (get_complimentary_hex(theme_button_color()[0]), theme_button_color()[1])
-        #         # disabled_button_color = disabled_button_color
-        #     except Exception:
-        #         print('* Problem computing disabled button color *')
         self.DisabledButtonColor = (
             button_color_to_tuple(disabled_button_color)
             if disabled_button_color is not None
@@ -7303,11 +7305,7 @@ class Button(Element):
             self.ButtonText = text
         if button_color != (None, None) and button_color != COLOR_SYSTEM_DEFAULT:
             bc = button_color_to_tuple(button_color, self.ButtonColor)
-            # if isinstance(button_color, str):
-            #     try:
-            #         button_color = button_color.split(' on ')
-            #     except Exception as e:
-            #         print('** Error in formatting your button color **', button_color, e)
+
             if self.UseTtkButtons:
                 if bc[0] not in (None, COLOR_SYSTEM_DEFAULT):
                     button_style.configure(style_name, foreground=bc[0])
@@ -7411,7 +7409,7 @@ class Button(Element):
         try:
             self.TKButton.invoke()
         except Exception:
-            print("Exception clicking button")
+            _logger.info("Exception clicking button")
 
     Click = click
     GetText = get_text
@@ -7603,7 +7601,7 @@ class ButtonMenu(Element):
         :param item_chosen: The menu item chosen.
         :type item_chosen:  (str)
         """
-        # print('IN MENU ITEM CALLBACK', item_chosen)
+        # _logger.info('IN MENU ITEM CALLBACK', item_chosen)
         self.MenuItemChosen = item_chosen
         self.ParentForm.LastButtonClicked = self.Key
         self.ParentForm.FormRemainedOpen = True
@@ -7749,7 +7747,7 @@ class ButtonMenu(Element):
         try:
             self.TKMenu.invoke(1)
         except Exception:
-            print("Exception clicking button")
+            _logger.info("Exception clicking button")
 
     Update = update
     Click = click
@@ -8261,7 +8259,7 @@ class Image(Element):
                 image=image, width=image.width(), heigh=image.height()
             )
         except Exception as e:
-            print("Exception in update_animation", e)
+            _logger.info("Exception in update_animation:{}".format(e))
 
     def update_animation_no_buffering(self, source, time_between_frames=0):
         """
@@ -8442,10 +8440,10 @@ class Canvas(Element):
         :rtype:  (tk.Canvas)
         """
         if self._TKCanvas is None:
-            print(
+            _logger.info(
                 "*** Did you forget to call Finalize()? Your code should look something like: ***"
             )
-            print('*** window = sg.Window("My Form", layout, finalize=True) ***')
+            _logger.info('*** window = sg.Window("My Form", layout, finalize=True) ***')
         return self._TKCanvas
 
     TKCanvas = tk_canvas
@@ -8630,10 +8628,10 @@ class Graph(Element):
         )
         converted_point_to = self._convert_xy_to_canvas_xy(point_to[0], point_to[1])
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case window was closed with an X
             id_ = self._TKCanvas2.create_line(
@@ -8664,10 +8662,10 @@ class Graph(Element):
             id = self._TKCanvas2.create_line(*converted_points, width=width, fill=color)
         except Exception:
             if self._TKCanvas2 is None:
-                print(
+                _logger.info(
                     "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
                 )
-                print("Call Window.Finalize() prior to this operation")
+                _logger.info("Call Window.Finalize() prior to this operation")
             id = None
         return id
 
@@ -8689,10 +8687,10 @@ class Graph(Element):
         size_converted = self._convert_xy_to_canvas_xy(point[0] + size, point[1])
         size = size_converted[0] - converted_point[0]
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         try:  # needed in case window was closed with an X
             point1 = converted_point[0] - size // 2, converted_point[1] - size // 2
@@ -8739,12 +8737,12 @@ class Graph(Element):
         radius = radius_converted[0] - converted_point[0]
         # radius = radius_converted[1]-5
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
-        # print('Oval parms', int(converted_point[0]) - int(radius), int(converted_point[1]) - int(radius),
+        # _logger.info('Oval parms', int(converted_point[0]) - int(radius), int(converted_point[1]) - int(radius),
         #                                      int(converted_point[0]) + int(radius), int(converted_point[1]) + int(radius))
         try:  # needed in case the window was closed with an X
             id = self._TKCanvas2.create_oval(
@@ -8783,10 +8781,10 @@ class Graph(Element):
             bottom_right[0], bottom_right[1]
         )
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case windows close with X
             id = self._TKCanvas2.create_oval(
@@ -8840,10 +8838,10 @@ class Graph(Element):
         )
         tkstyle = tk.PIESLICE if style is None else style
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case closed with X
             id = self._TKCanvas2.create_arc(
@@ -8859,7 +8857,7 @@ class Graph(Element):
                 fill=fill_color,
             )
         except Exception as e:
-            print("Error encountered drawing arc.", e)
+            _logger.info("Error encountered drawing arc.:{}".format(e))
             id = None
         return id
 
@@ -8888,10 +8886,10 @@ class Graph(Element):
             bottom_right[0], bottom_right[1]
         )
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         if line_width is None:
             line_width = 1
@@ -8929,10 +8927,10 @@ class Graph(Element):
             self._convert_xy_to_canvas_xy(point[0], point[1]) for point in points
         ]
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case closed with X
             id = self._TKCanvas2.create_polygon(
@@ -8974,10 +8972,10 @@ class Graph(Element):
             return
         converted_point = self._convert_xy_to_canvas_xy(location[0], location[1])
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case closed with X
             id = self._TKCanvas2.create_text(
@@ -9018,10 +9016,10 @@ class Graph(Element):
                 return None  # an error likely means the window has closed so exit
         converted_point = self._convert_xy_to_canvas_xy(location[0], location[1])
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         try:  # in case closed with X
             id = self._TKCanvas2.create_image(
@@ -9037,10 +9035,10 @@ class Graph(Element):
         Erase the Graph - Removes all figures previously "drawn" using the Graph methods (e.g. DrawText)
         """
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         self.Images = {}
         try:  # in case window was closed with X
@@ -9058,7 +9056,7 @@ class Graph(Element):
         try:
             self._TKCanvas2.delete(id_)
         except Exception:
-            print("DeleteFigure - bad ID {}".format(id_))
+            _logger.info("DeleteFigure - bad ID {}".format(id_))
         try:
             del self.Images[
                 id_
@@ -9117,10 +9115,10 @@ class Graph(Element):
             shift_converted[1] - zero_converted[1],
         )
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** WARNING - The Graph element has not been finalized and cannot be drawn upon ***"
             )
-            print("Call Window.Finalize() prior to this operation")
+            _logger.info("Call Window.Finalize() prior to this operation")
             return None
         self._TKCanvas2.move("all", shift_amount[0], shift_amount[1])
 
@@ -9142,7 +9140,7 @@ class Graph(Element):
             shift_converted[1] - zero_converted[1],
         )
         if figure is None:
-            print("* move_figure warning - your figure is None *")
+            _logger.info("* move_figure warning - your figure is None *")
             return None
         self._TKCanvas2.move(figure, shift_amount[0], shift_amount[1])
 
@@ -9166,10 +9164,10 @@ class Graph(Element):
             shift_converted[1] - zero_converted[1],
         )
         if figure is None:
-            print(
+            _logger.info(
                 "*** WARNING - Your figure is None. It most likely means your did not Finalize your Window ***"
             )
-            print("Call Window.Finalize() prior to all graph operations")
+            _logger.info("Call Window.Finalize() prior to all graph operations")
             return None
         xy = self._TKCanvas2.coords(figure)
         self._TKCanvas2.move(
@@ -9245,10 +9243,12 @@ class Graph(Element):
         :rtype:  (tk.Canvas)
         """
         if self._TKCanvas2 is None:
-            print(
+            _logger.info(
                 "*** Did you forget to call Finalize()? Your code should look something like: ***"
             )
-            print('*** form = sg.Window("My Form").Layout(layout).Finalize() ***')
+            _logger.info(
+                '*** form = sg.Window("My Form").Layout(layout).Finalize() ***'
+            )
         return self._TKCanvas2
 
     # button release callback
@@ -10065,7 +10065,7 @@ class Tab(Element):
         try:
             self.ParentNotebook.select(self.TabID)
         except Exception as e:
-            print("Exception Selecting Tab {}".format(e))
+            _logger.info("Exception Selecting Tab {}".format(e))
 
     AddRow = add_row
     Layout = layout
@@ -10416,7 +10416,7 @@ class TabGroup(Element):
 
             if tab_element.ImageSubsample and photo is not None:
                 photo = photo.subsample(tab_element.ImageSubsample)
-                # print('*ERROR laying out form.... Image Element has no image specified*')
+                # _logger.info('*ERROR laying out form.... Image Element has no image specified*')
         except Exception as e:
             photo = None
             _error_popup_with_traceback(
@@ -10825,7 +10825,7 @@ class TkScrollableFrame(tk.Frame):
 
     # Chr0nic
     def hookMouseWheel(self, e):
-        # print("enter")
+        # _logger.info("enter")
         VarHolder.canvas_holder = self.canvas
         self.canvas.bind_all("<4>", self.yscroll, add="+")
         self.canvas.bind_all("<5>", self.yscroll, add="+")
@@ -10834,7 +10834,7 @@ class TkScrollableFrame(tk.Frame):
 
     # Chr0nic
     def unhookMouseWheel(self, e):
-        # print("leave")
+        # _logger.info("leave")
         VarHolder.canvas_holder = None
         self.canvas.unbind_all("<4>")
         self.canvas.unbind_all("<5>")
@@ -11336,8 +11336,6 @@ class TKCalendar(ttk.Frame):
     NONE of this code is user callable.  Stay away!
     """
 
-    # XXX ToDo: cget and configure
-
     datetime = calendar.datetime.datetime
     timedelta = calendar.datetime.timedelta
 
@@ -11683,7 +11681,7 @@ class Menu(Element):
         :param item_chosen: the text that was clicked on / chosen from the menu
         :type item_chosen:  (str)
         """
-        # print('IN MENU ITEM CALLBACK', item_chosen)
+        # _logger.info('IN MENU ITEM CALLBACK', item_chosen)
         self.MenuItemChosen = item_chosen
         self.ParentForm.LastButtonClicked = item_chosen
         self.ParentForm.FormRemainedOpen = True
@@ -11748,7 +11746,7 @@ class Menu(Element):
                 if self.Font is not None:
                     baritem.config(font=self.Font)
                 pos = menu_entry[0].find(MENU_SHORTCUT_CHARACTER)
-                # print(pos)
+                # _logger.info(pos)
                 if pos != -1:
                     if (
                         pos == 0
@@ -12013,8 +12011,9 @@ class Table(Element):
                     selected_row_colors = selected_row_colors.split(" on ")
             except Exception as e:
                 print(
-                    "* Table Element Warning * you messed up with color formatting of Selected Row Color",
-                    e,
+                    "* Table Element Warning * you messed up with color formatting of Selected Row Color:{}".format(
+                        e
+                    )
                 )
         self.SelectedRowColors = selected_row_colors
 
@@ -12168,7 +12167,7 @@ class Table(Element):
         :param event: event information from tkinter
         :type event:  (unknown)
         """
-        # print('**-- in treeview selected --**')
+        # _logger.info('**-- in treeview selected --**')
         selections = self.TKTreeview.selection()
         self.SelectedRows = [int(x) - 1 for x in selections]
         if self.ChangeSubmits:
@@ -12265,9 +12264,9 @@ class Table(Element):
                 if row != -1 and row is not None:
                     selections = [row + 1]
                     self.TKTreeview.selection_set(selections)
-        # print(selections)
+        # _logger.info(selections)
         self.SelectedRows = [int(x) - 1 for x in selections]
-        # print('The new selected rows = ', self.SelectedRows, 'selections =', selections)
+        # _logger.info('The new selected rows = ', self.SelectedRows, 'selections =', selections)
         if self.enable_click_events:
             if self.Key is not None:
                 self.ParentForm.LastButtonClicked = (
@@ -12496,8 +12495,9 @@ class Tree(Element):
                     selected_row_colors = selected_row_colors.split(" on ")
             except Exception as e:
                 print(
-                    "* Table Element Warning * you messed up with color formatting of Selected Row Color",
-                    e,
+                    "* Table Element Warning * you messed up with color formatting of Selected Row Color:{}".format(
+                        e
+                    )
                 )
         self.SelectedRowColors = selected_row_colors
 
@@ -12673,7 +12673,7 @@ class Tree(Element):
                     break
             else:
                 id = None
-                print("** Key not found **")
+                _logger.info("** Key not found **")
         else:
             id = None
         if id:
@@ -12849,7 +12849,7 @@ class ErrorElement(Element):
         :return:                returns 'self' so call can be chained
         :rtype:                 (ErrorElement)
         """
-        print(
+        _logger.info(
             "** Your update is being ignored because you supplied a bad key earlier **"
         )
         return self
@@ -13046,7 +13046,7 @@ class Window:
     def __init__(
         self,
         title: str,
-        layout: Union[List[List[Element]], tuple[tuple[Element]]] = None,
+        layout=None,
         default_element_size=None,
         default_button_element_size=(None, None),
         auto_size_text=None,
@@ -13437,7 +13437,7 @@ class Window:
                 self.Finalize()
 
         if CURRENT_LOOK_AND_FEEL == "Default":
-            print(
+            _logger.info(
                 "Window will be a boring gray. Try removing the theme call entirely\n",
                 "You will get the default theme or the one set in global settings\n"
                 "If you seriously want this gray window and no more nagging, add  theme('DefaultNoMoreNagging')  or theme('Gray Gray Gray') for completely gray/System Defaults",
@@ -13460,7 +13460,7 @@ class Window:
         Note - there is a bug where this count easily gets out of sync. Issue has been opened already. No ill effects
         """
         self.NumOpenWindows += 1
-        # print('+++++ INCREMENTING Num Open Windows = {} ---'.format(Window.NumOpenWindows))
+        # _logger.info('+++++ INCREMENTING Num Open Windows = {} ---'.format(Window.NumOpenWindows))
 
     @classmethod
     def _DecrementOpenCount(self):
@@ -13468,7 +13468,7 @@ class Window:
         Not user callable!  Decrements the number of open windows
         """
         self.NumOpenWindows -= 1 * (self.NumOpenWindows != 0)  # decrement if not 0
-        # print('----- DECREMENTING Num Open Windows = {} ---'.format(Window.NumOpenWindows))
+        # _logger.info('----- DECREMENTING Num Open Windows = {} ---'.format(Window.NumOpenWindows))
 
     @classmethod
     def get_screen_size(self):
@@ -13821,9 +13821,9 @@ class Window:
         """
         # first, get the results table built
         # modify the Results table in the parent FlexForm object
-        # print('TIMEOUT CALLBACK')
+        # _logger.info('TIMEOUT CALLBACK')
         if self.TimerCancelled:
-            # print('** timer was cancelled **')
+            # _logger.info('** timer was cancelled **')
             return
         self.LastButtonClicked = self.TimeoutKey
         self.FormRemainedOpen = True
@@ -13867,7 +13867,9 @@ class Window:
                     year, month, day, hour, minute, second
                 ).strftime(elem.calendar_format)
             except Exception as e:
-                print("Bad format string in calendar chooser button", e)
+                _logger.info(
+                    "Bad format string in calendar chooser button:{}".format(e)
+                )
                 date_string = "Bad format string"
 
             if target_element is not None and target_element != elem:
@@ -14043,7 +14045,7 @@ class Window:
                     self.TKrootDestroyed = True
                     Window._DecrementOpenCount()
                     # _my_windows.Decrement()
-                    # print('ROOT Destroyed')
+                    # _logger.info('ROOT Destroyed')
                 results = _BuildResults(self, False, self)
                 if results[0] is not None and results[0] != timeout_key:
                     return results
@@ -14051,10 +14053,10 @@ class Window:
                     pass
 
                 # else:
-                #     print("** REALTIME PROBLEM FOUND **", results)
+                #     _logger.info("** REALTIME PROBLEM FOUND **", results)
 
             if self.RootNeedsDestroying:
-                # print('*** DESTROYING really late***')
+                # _logger.info('*** DESTROYING really late***')
                 try:
                     self.TKroot.destroy()
                 except Exception:
@@ -14074,9 +14076,9 @@ class Window:
             try:
                 Window._root_running_mainloop.mainloop()
             except Exception:
-                print("**** EXITING ****")
+                _logger.info("**** EXITING ****")
                 exit(-1)
-            # print('Out main')
+            # _logger.info('Out main')
             self.CurrentlyRunningMainloop = False
             # if self.LastButtonClicked != TIMEOUT_KEY:
             try:
@@ -14084,10 +14086,10 @@ class Window:
                 del self.TKAfterID
             except Exception:
                 pass
-                # print('** tkafter cancel failed **')
+                # _logger.info('** tkafter cancel failed **')
             self.TimerCancelled = True
             if self.RootNeedsDestroying:
-                # print('*** DESTROYING LATE ***')
+                # _logger.info('*** DESTROYING LATE ***')
                 try:
                     self.TKroot.destroy()
                 except Exception:
@@ -14127,7 +14129,7 @@ class Window:
             elif (
                 not self.XFound and self.ReturnValues[0] is None
             ):  # Return a timeout event... can happen when autoclose used on another window
-                # print("*** Faking timeout ***")
+                # _logger.info("*** Faking timeout ***")
                 self.ReturnValues = (
                     self.TimeoutKey,
                     self.ReturnValues[1],
@@ -14147,7 +14149,7 @@ class Window:
                 self.TKroot.destroy()
             except Exception:
                 pass
-                # print('DESTROY FAILED')
+                # _logger.info('DESTROY FAILED')
             return None, None
         if not self.Shown:
             self._Show(non_blocking=True)
@@ -14157,10 +14159,10 @@ class Window:
             self.TKrootDestroyed = True
             Window._DecrementOpenCount()
             # _my_windows.Decrement()
-            # print("read failed")
+            # _logger.info("read failed")
             # return None, None
         if self.RootNeedsDestroying:
-            # print('*** DESTROYING LATE ***', self.ReturnValues)
+            # _logger.info('*** DESTROYING LATE ***', self.ReturnValues)
             self.TKroot.destroy()
             Window._DecrementOpenCount()
             # _my_windows.Decrement()
@@ -14266,7 +14268,7 @@ class Window:
             "Use of FindElement is not recommended.\nEither switch to the recommended window[key] format\nor the PEP8 compliant find_element",
             UserWarning,
         )
-        print(
+        _logger.info(
             "** Warning - FindElement should not be used to look up elements. window[key] or window.find_element are recommended. **"
         )
 
@@ -14327,10 +14329,10 @@ class Window:
             closest_key = self._find_closest_key(key)
             if not silent_on_error:
                 print(
-                    "** Error looking up your element using the key: ",
-                    key,
-                    "The closest matching key: ",
-                    closest_key,
+                    "** Error looking up your element using the key: "
+                    + key
+                    + "The closest matching key: "
+                    + closest_key,
                 )
                 _error_popup_with_traceback(
                     "Key Error",
@@ -14550,7 +14552,7 @@ class Window:
             with open(filename, "wb") as sf:
                 pickle.dump(values, sf)
         except Exception:
-            print("*** Error saving Window contents to disk ***")
+            _logger.info("*** Error saving Window contents to disk ***")
 
     def load_from_disk(self, filename):
         """
@@ -14563,7 +14565,7 @@ class Window:
             with open(filename, "rb") as df:
                 self.Fill(pickle.load(df))
         except Exception:
-            print("*** Error loading form to disk ***")
+            _logger.info("*** Error loading form to disk ***")
 
     def get_screen_dimensions(self):
         """
@@ -14675,7 +14677,7 @@ class Window:
             isinstance(event.widget, GRAB_ANYWHERE_IGNORE_THESE_WIDGETS)
             or event.widget in self._grab_anywhere_ignore_these_list
         ) and event.widget not in self._grab_anywhere_include_these_list:
-            # print('Found widget to ignore in grab anywhere...')
+            # _logger.info('Found widget to ignore in grab anywhere...')
             return
         self._start_move_save_offset(event)
 
@@ -14703,7 +14705,7 @@ class Window:
         self._mouse_offset_y = self._mousey - self._starty
         # ------ Move All Windows code ------
         if Window._move_all_windows:
-            # print('Moving all')
+            # _logger.info('Moving all')
             for win in Window._active_windows:
                 if win == self:
                     continue
@@ -14727,7 +14729,7 @@ class Window:
             isinstance(event.widget, GRAB_ANYWHERE_IGNORE_THESE_WIDGETS)
             or event.widget in self._grab_anywhere_ignore_these_list
         ) and event.widget not in self._grab_anywhere_include_these_list:
-            # print('Found widget to ignore in grab anywhere...')
+            # _logger.info('Found widget to ignore in grab anywhere...')
             return
 
         self._OnMotion(event)
@@ -14736,7 +14738,7 @@ class Window:
         self.TKroot.geometry(
             f"+{event.x_root - self._mouse_offset_x}+{event.y_root - self._mouse_offset_y}"
         )
-        # print(f"+{event.x_root}+{event.y_root}")
+        # _logger.info(f"+{event.x_root}+{event.y_root}")
         # ------ Move All Windows code ------
         try:
             if Window._move_all_windows:
@@ -14744,13 +14746,16 @@ class Window:
                     if win == self:
                         continue
                     win.TKroot.geometry(
-                        f"+{event.x_root - win._mouse_offset_x}+{event.y_root - win._mouse_offset_y}"
+                        "+{}+{}".format(
+                            event.x_root - win._mouse_offset_x,
+                            event.y_root - win._mouse_offset_y,
+                        )
                     )
         except Exception as e:
-            print("on motion error", e)
+            _logger.info("on motion error" + str(e))
 
     def _focus_callback(self, event):
-        print("Focus event = {} window = {}".format(event, self.Title))
+        _logger.info("Focus event = {} window = {}".format(event, self.Title))
 
     def _config_callback(self, event):
         """
@@ -14783,52 +14788,6 @@ class Window:
             self.move(x - 1, y)
         elif event.keysym == "Right":
             self.move(x + 1, y)
-
-    """
-    def _config_callback(self, event):
-        new_x = event.x
-        new_y = event.y
-
-
-        if self.not_completed_initial_movement:
-            if self.starting_window_position != (new_x, new_y):
-                return
-            self.not_completed_initial_movement = False
-            return
-
-        if not self.saw_00:
-            if new_x == 0 and new_y == 0:
-                self.saw_00 = True
-
-        # self.config_count += 1
-        # if self.config_count < 40:
-        #     return
-
-        print('Move LOGIC')
-
-        if self.config_last_size != (event.width, event.height):
-            self.config_last_size = (event.width, event.height)
-
-        if self.config_last_location[0] != new_x or self.config_last_location[1] != new_y:
-            if self.config_last_location == (None, None):
-                self.config_last_location = (new_x, new_y)
-                return
-
-        deltax = self.config_last_location[0] - event.x
-        deltay = self.config_last_location[1] - event.y
-        if deltax == 0 and deltay == 0:
-            print('not moving so returning')
-            return
-        if Window._move_all_windows:
-            print('checking all windows')
-            for window in Window._active_windows:
-                if window == self:
-                    continue
-                x = window.TKroot.winfo_x() + deltax
-                y = window.TKroot.winfo_y() + deltay
-                # window.TKroot.geometry("+%s+%s" % (x, y))  # this is what really moves the window
-                # window.config_last_location = (x,y)
-    """
 
     def _KeyboardCallback(self, event):
         """
@@ -14960,7 +14919,7 @@ class Window:
         Internally used method ONLY. Not sure callable.  tkinter calls this when the window is closed by clicking X
         """
         # global _my_windows
-        # print('Got closing callback', self.DisableClose)
+        # _logger.info('Got closing callback', self.DisableClose)
         if self.DisableClose:
             return
         if (
@@ -15313,7 +15272,9 @@ class Window:
             self.TKroot.attributes("-transparentcolor", color)
             self.TransparentColor = color
         except Exception:
-            print("Transparent color not supported on this platform (windows only)")
+            _logger.info(
+                "Transparent color not supported on this platform (windows only)"
+            )
 
     def mouse_location(self):
         """
@@ -15361,7 +15322,7 @@ class Window:
         :param propagate:   If True then tkinter will be told to propagate the event
         :type propagate:    (bool)
         """
-        # print('bind callback', bind_string, event)
+        # _logger.info('bind callback', bind_string, event)
         key = self.user_bind_dict.get(bind_string, "")
         self.user_bind_event = event
         if key is not None:
@@ -15499,7 +15460,7 @@ class Window:
             self.TKroot.grab_set()
             self.TKroot.focus_force()
         except Exception as e:
-            print("Exception trying to make modal", e)
+            _logger.info("Exception trying to make modal" + str(e))
 
     def force_focus(self):
         """
@@ -15532,8 +15493,8 @@ class Window:
         try:
             self.TKroot.config(cursor=cursor)
         except Exception as e:
-            print("Warning bad cursor specified ", cursor)
-            print(e)
+            _logger.info("Warning bad cursor specified " + str(cursor))
+            _logger.info(e)
 
     def ding(self, display_number=0):
         """
@@ -15560,15 +15521,6 @@ class Window:
         :type event:
 
         """
-        # print('Thread callback info', threading.current_thread())
-        # print(event)
-        # trace_details = traceback.format_stack()
-        # print(''.join(trace_details))
-        # self.thread_lock.acquire()
-        # if self.thread_timer:
-        # self.TKroot.after_cancel(id=self.thread_timer)
-        # self.thread_timer = None
-        # self.thread_lock.release()
 
         if self._queued_thread_event_available():
             self.FormRemainedOpen = True
@@ -15600,21 +15552,14 @@ class Window:
         """
 
         if self.thread_queue is None:
-            print("*** Warning Window.write_event_value - no thread queue found ***")
+            _logger.info(
+                "*** Warning Window.write_event_value - no thread queue found ***"
+            )
             return
         # self.thread_lock.acquire()  # first lock the critical section
         self.thread_queue.put(item=(key, value))
         self.TKroot.tk.willdispatch()  # brilliant bit of code provided by Giuliano who I owe a million thank yous!
         self.thread_strvar.set("new item")
-
-        # self.thread_queue.put(item=(key, value))
-        # self.thread_strvar.set('new item')
-        # March 28 2021 - finally found a solution!  It needs a little more work and a lock
-        # if no timer is running, then one should be started
-        # if self.thread_timer is None:
-        #     print('Starting a timer')
-        #     self.thread_timer = self.TKroot.after(1, self._window_tkvar_changed_callback)
-        # self.thread_lock.release()
 
     def _queued_thread_event_read(self):
         if self.thread_queue is None:
@@ -15679,7 +15624,7 @@ class Window:
             except ImportError:
                 pil_imported = False
                 pil_import_attempted = True
-                print("FAILED TO IMPORT PIL!")
+                _logger.info("FAILED TO IMPORT PIL!")
                 return
         try:
             # Get location of window to save
@@ -15708,7 +15653,7 @@ class Window:
             grab = ImageGrab.grab(bbox=rect)
             # Save the grabbed image to disk
         except Exception as e:
-            # print(e)
+            # _logger.info(e)
             popup_error_with_traceback(
                 "Screen capture failure",
                 "Error happened while trying to save screencapture",
@@ -15931,7 +15876,7 @@ class Window:
         ]
         if len(cls._rerouted_stdout_stack) == 0 and cls._original_stdout is not None:
             sys.stdout = cls._original_stdout
-        # print('Restored stdout... new stack:',  [item[0].Title for item in cls._rerouted_stdout_stack ])
+        # _logger.info('Restored stdout... new stack:',  [item[0].Title for item in cls._rerouted_stdout_stack ])
 
     @classmethod
     def _restore_stderr(cls):
@@ -15945,7 +15890,7 @@ class Window:
         ]
         if len(cls._rerouted_stderr_stack) == 0 and cls._original_stderr is not None:
             sys.stderr = cls._original_stderr
-        # print('Restored stderr... new stack:',  [item[0].Title for item in cls._rerouted_stderr_stack ])
+        # _logger.info('Restored stderr... new stack:',  [item[0].Title for item in cls._rerouted_stderr_stack ])
 
     # def __enter__(self):
     #     """
@@ -16049,24 +15994,6 @@ class Window:
     CloseNonBlocking = close
     CloseNonBlockingForm = close
     start_thread = perform_long_operation
-    #
-    # def __exit__(self, *a):
-    #     """
-    #     WAS used with context managers which are no longer needed nor advised.  It is here for legacy support and
-    #     am afraid of removing right now
-    #     :param *a: (?) Not sure what's passed in.
-    #      :type *a:
-    #     :return:   Always returns False which was needed for context manager to work
-    #      :rtype:
-    #     """
-    #     self.__del__()
-    #     return False
-    #
-    # def __del__(self):
-    #     # print('DELETING WINDOW')
-    #     for row in self.Rows:
-    #         for element in row:
-    #             element.__del__()
 
 
 # -------------------------------- PEP8-ify the Window Class USER Interfaces -------------------------------- #
@@ -16100,7 +16027,7 @@ def _exit_mainloop(exiting_window):
         Window._window_that_exited = exiting_window
         if Window._root_running_mainloop is not None:
             Window._root_running_mainloop.quit()
-        # print('** Exited window mainloop **')
+        # _logger.info('** Exited window mainloop **')
 
 
 def _timeout_alarm_callback_hidden():
@@ -16112,7 +16039,7 @@ def _timeout_alarm_callback_hidden():
 
     # first, get the results table built
     # modify the Results table in the parent FlexForm object
-    # print('TIMEOUT CALLBACK')
+    # _logger.info('TIMEOUT CALLBACK')
     Window._root_running_mainloop.quit()  # kick the users out of the mainloop
 
     # Get window that caused return
@@ -16187,7 +16114,7 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
         del Window._TKAfterID
     except Exception:
         pass
-        # print('** tkafter cancel failed **')
+        # _logger.info('** tkafter cancel failed **')
 
     # Get window that caused return
 
@@ -16203,7 +16130,7 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
             del Window._active_windows[window]
         except Exception:
             pass
-            # print('Error deleting window, but OK')
+            # _logger.info('Error deleting window, but OK')
     else:
         _BuildResults(window, False, window)
         event, values = window.ReturnValues
@@ -19484,9 +19411,9 @@ def _simplified_dual_color_to_tuple(color_tuple_or_string, default=(None, None))
                     color_tuple_or_string,
                 )
             else:
-                print(
-                    "** Badly formatted dual-color... not a tuple nor string **",
-                    color_tuple_or_string,
+                _logger.info(
+                    "** Badly formatted dual-color... not a tuple nor string **"
+                    + str(color_tuple_or_string)
                 )
             text_color, background_color = default
     except Exception as e:
@@ -19495,17 +19422,17 @@ def _simplified_dual_color_to_tuple(color_tuple_or_string, default=(None, None))
                 "** Badly formatted button color **", color_tuple_or_string, e
             )
         else:
-            print(
-                "** Badly formatted button color... not a tuple nor string **",
-                color_tuple_or_string,
-                e,
+            _logger.info(
+                "** Badly formatted button color... not a tuple nor string **"
+                + color_tuple_or_string
+                + str(e),
             )
         text_color, background_color = default
     if isinstance(text_color, int):
         text_color = "#%06X" % text_color
     if isinstance(background_color, int):
         background_color = "#%06X" % background_color
-    # print('converted button color', color_tuple_or_string, 'to', (text_color, background_color))
+    # _logger.info('converted button color', color_tuple_or_string, 'to', (text_color, background_color))
 
     return text_color, background_color
 
@@ -19861,7 +19788,7 @@ def fill_form_with_values(window, values_dict):
         try:
             window.AllKeysDict[element_key].Update(values_dict[element_key])
         except Exception:
-            print(
+            _logger.info(
                 "Problem filling form. Perhaps bad key?  This is a suspected bad key: {}".format(
                     element_key
                 )
@@ -20385,22 +20312,6 @@ def _make_ttk_scrollbar(element, orientation, window):
         style.configure(style_name, relief=scroll_relief)
 
 
-# if __name__ == '__main__':
-#     root = tk.Tk()
-#
-#     # find out what options are available for the theme and widget style
-#     options = Stylist.get_options('TFrame', 'default')
-#     print('The options for this style and theme are', options)
-#
-#     # create a new style
-#     frame_style = Stylist.create_style('TFrame', 'alt', relief=tk.RAISED, borderwidth=1)
-#
-#     # apply the new style
-#     ttk.Frame(style=frame_style, width=100, height=100).pack(padx=10, pady=10)
-#
-#     root.mainloop()
-
-
 # @_timeit
 def PackFormIntoFrame(form, containing_frame, toplevel_form):
     """
@@ -20474,18 +20385,6 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
     def _string_width_in_pixels(font, string):
         return tkinter.font.Font(font=font).measure(string)  # single character width
 
-    # def _valid_theme(style, theme_name):
-    #     if theme_name in style.theme_names():
-    #         return True
-    #     _error_popup_with_traceback('Your Window has an invalid ttk theme specified',
-    #                                 'The traceback will show you the Window with the problem layout',
-    #                                 '** Invalid ttk theme specified {} **'.format(theme_name),
-    #                                 '\nValid choices include: {}'.format(style.theme_names()))
-    #
-    #     # print('** Invalid ttk theme specified {} **'.format(theme_name),
-    #     #       '\nValid choices include: {}'.format(style.theme_names()))
-    #     return False
-
     def _add_grab(element):
         try:
             if form.Grab is True or element.Grab is True:
@@ -20519,7 +20418,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                     )
         except Exception:
             pass
-            # print(e)
+            # _logger.info(e)
 
     def _add_right_click_menu_and_grab(element):
         if element.RightClickMenu == MENU_RIGHT_CLICK_DISABLED:
@@ -21246,7 +21145,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                         "Has a bad highlight color {}".format(element.HighlightColors),
                         "Parent Window's Title: {}".format(toplevel_form.Title),
                     )
-                    # print('Button with text: ', btext, 'has a bad highlight color', element.HighlightColors)
+                    # _logger.info('Button with text: ', btext, 'has a bad highlight color', element.HighlightColors)
                 _add_right_click_menu_and_grab(element)
 
             # -------------------------  BUTTON placement element ttk version ------------------------- #
@@ -22465,7 +22364,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                             photo = photo.subsample(element.ImageSubsample)
                         if element.zoom:
                             photo = photo.zoom(element.zoom)
-                        # print('*ERROR laying out form.... Image Element has no image specified*')
+                        # _logger.info('*ERROR laying out form.... Image Element has no image specified*')
                 except Exception as e:
                     photo = None
                     _error_popup_with_traceback(
@@ -22643,7 +22542,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                     if font is not None:
                         baritem.config(font=font)
                     pos = menu_entry[0].find(MENU_SHORTCUT_CHARACTER)
-                    # print(pos)
+                    # _logger.info(pos)
                     if pos != -1:
                         if (
                             pos == 0
@@ -22764,7 +22663,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                         photo = photo.subsample(element.ImageSubsample)
                     if element.zoom and photo is not None:
                         photo = photo.zoom(element.zoom)
-                        # print('*ERROR laying out form.... Image Element has no image specified*')
+                        # _logger.info('*ERROR laying out form.... Image Element has no image specified*')
                 except Exception as e:
                     photo = None
                     _error_popup_with_traceback(
@@ -23352,7 +23251,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                 _add_right_click_menu_and_grab(element)
 
                 if tclversion_detailed == "8.6.9" and ENABLE_TREEVIEW_869_PATCH:
-                    # print('*** tk version 8.6.9 detected.... patching ttk treeview code ***')
+                    # _logger.info('*** tk version 8.6.9 detected.... patching ttk treeview code ***')
                     table_style.map(
                         style_name,
                         foreground=_fixed_map(
@@ -23458,7 +23357,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                                 element.IdToKey[id] = node.key
                                 element.KeyToID[node.key] = id
                             except Exception as e:
-                                print("Error inserting image into tree", e)
+                                _logger.info("Error inserting image into tree" + str(e))
                         else:
                             id = treeview.insert(
                                 element.KeyToID[node.parent],
@@ -23634,7 +23533,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                 _add_right_click_menu_and_grab(element)
 
                 if tclversion_detailed == "8.6.9" and ENABLE_TREEVIEW_869_PATCH:
-                    # print('*** tk version 8.6.9 detected.... patching ttk treeview code ***')
+                    # _logger.info('*** tk version 8.6.9 detected.... patching ttk treeview code ***')
                     tree_style.map(
                         style_name,
                         foreground=_fixed_map(
@@ -23783,7 +23682,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                 )  # width of widget in Pixels
                 if not auto_size_text and height == 1:
                     wraplen = 0
-                # print("wraplen, width, height", wraplen, width, height)
+                # _logger.info("wraplen, width, height", wraplen, width, height)
                 tktext_label.configure(
                     anchor=anchor, wraplen=wraplen
                 )  # set wrap to width of widget
@@ -23888,9 +23787,9 @@ def _get_hidden_master_root():
             Window.hidden_master_root.wm_overrideredirect(True)
         except Exception as e:
             if not running_mac():
-                print(
-                    "* Error performing wm_overrideredirect while hiding the hidden master root*",
-                    e,
+                _logger.info(
+                    "* Error performing wm_overrideredirect while hiding the hidden master root*"
+                    + str(e),
                 )
         Window.hidden_master_root.withdraw()
     return Window.hidden_master_root
@@ -23917,7 +23816,7 @@ def _no_titlebar_setup(window):
                 # if running_mac() and ENABLE_MAC_NOTITLEBAR_PATCH and (sum([int(i) for i in tclversion_detailed.split('.')]) < 24):
                 # if running_mac() and ENABLE_MAC_NOTITLEBAR_PATCH:
                 if _mac_should_apply_notitlebar_patch():
-                    print("* Applying Mac no_titlebar patch *")
+                    _logger.info("* Applying Mac no_titlebar patch *")
                     window.TKroot.wm_overrideredirect(False)
     except Exception as e:
         warnings.warn("** Problem setting no titlebar {} **".format(e), UserWarning)
@@ -24000,7 +23899,7 @@ def StartupTK(window):
     # global _my_windows
     # ow = _my_windows.NumOpenWindows
     ow = Window.NumOpenWindows
-    # print('Starting TK open Windows = {}'.format(ow))
+    # _logger.info('Starting TK open Windows = {}'.format(ow))
     if ENABLE_TK_WINDOWS:
         root = tk.Tk()
     elif not ow and not window.ForceTopLevel:
@@ -24030,9 +23929,9 @@ def StartupTK(window):
                     "-alpha", 0
                 )  # hide window while building it. makes for smoother 'paint'
         except Exception as e:
-            print(
-                "*** Exception setting alpha channel to zero while creating window ***",
-                e,
+            _logger.info(
+                "*** Exception setting alpha channel to zero while creating window ***"
+                + str(e),
             )
 
     if (
@@ -24101,11 +24000,10 @@ def StartupTK(window):
         alpha_channel = 1 if window.AlphaChannel is None else window.AlphaChannel
         root.attributes("-alpha", alpha_channel)  # Make window visible again
     except Exception as e:
-        print(
-            "**** Error setting Alpha Channel to {} after window was created ****".format(
-                alpha_channel
+        _logger.info(
+            "**** Error setting Alpha Channel to {} after window was created ****:{}".format(
+                alpha_channel, e
             ),
-            e,
         )
         # pass
 
@@ -24123,7 +24021,7 @@ def StartupTK(window):
     DEFAULT_WINDOW_SNAPSHOT_KEY_CODE = main_global_get_screen_snapshot_symcode()
 
     if DEFAULT_WINDOW_SNAPSHOT_KEY_CODE:
-        # print('**** BINDING THE SNAPSHOT!', DEFAULT_WINDOW_SNAPSHOT_KEY_CODE, DEFAULT_WINDOW_SNAPSHOT_KEY)
+        # _logger.info('**** BINDING THE SNAPSHOT!', DEFAULT_WINDOW_SNAPSHOT_KEY_CODE, DEFAULT_WINDOW_SNAPSHOT_KEY)
         window.bind(
             DEFAULT_WINDOW_SNAPSHOT_KEY_CODE,
             DEFAULT_WINDOW_SNAPSHOT_KEY,
@@ -24148,7 +24046,7 @@ def StartupTK(window):
         window.TKroot.protocol("WM_DELETE_WINDOW", window._OnClosingCallback)
 
     else:  # it's a blocking form
-        # print('..... CALLING MainLoop')
+        # _logger.info('..... CALLING MainLoop')
         window.CurrentlyRunningMainloop = True
         window.TKroot.protocol("WM_DESTROY_WINDOW", window._OnClosingCallback)
         window.TKroot.protocol("WM_DELETE_WINDOW", window._OnClosingCallback)
@@ -24165,7 +24063,7 @@ def StartupTK(window):
         window.TKroot.mainloop()
         window.CurrentlyRunningMainloop = False
         window.TimerCancelled = True
-        # print('..... BACK from MainLoop')
+        # _logger.info('..... BACK from MainLoop')
         if not window.FormRemainedOpen:
             Window._DecrementOpenCount()
             # _my_windows.Decrement()
@@ -24204,7 +24102,7 @@ def _set_icon_for_tkinter_window(root, icon=None, pngbase64=None):
             try:
                 root.tk.call("wm", "iconphoto", root._w, wicon)
             except Exception as e:
-                print("Set icon exception", e)
+                _logger.info("Set icon exception" + str(e))
                 pass
         return
 
@@ -24221,11 +24119,10 @@ def _set_icon_for_tkinter_window(root, icon=None, pngbase64=None):
                 try:
                     root.tk.call("wm", "iconphoto", root._w, wicon)
                 except Exception as e:
-                    print("Set icon exception", e)
-                    pass
+                    _logger.info("Set icon exception" + str(e))
+
             except Exception:
-                print("Set icon exception", e)
-                pass
+                _logger.info("Set icon exception" + str(e))
 
 
 # ==============================_GetNumLinesNeeded ==#
@@ -25044,12 +24941,12 @@ def cprint(
     if (destination_window is None and window is None) or (
         destination_key is None and key is None
     ):
-        print(
+        _logger.info(
             "** Warning ** Attempting to perform a cprint without a valid window & key",
             "Will instead print on Console",
             "You can specify window and key in this cprint call, or set ahead of time using cprint_set_output_destination",
         )
-        print(*args)
+        _logger.info(*args)
         return
 
     kw_text_color = text_color or t
@@ -25068,7 +24965,7 @@ def cprint(
             else:  # if no "on" then assume the color string is just the text color
                 kw_text_color = dual_color
     except Exception as e:
-        print("* cprint warning * you messed up with color formatting", e)
+        _logger.info("* cprint warning * you messed up with color formatting" + str(e))
 
     mline = destination_window.find_element(destination_key, silent_on_error=True)  # type: Multiline
     try:
@@ -25099,9 +24996,9 @@ def cprint(
                 autoscroll=autoscroll,
             )
     except Exception as e:
-        print(
-            "** cprint error trying to print to the multiline. Printing to console instead **",
-            e,
+        _logger.info(
+            "** cprint error trying to print to the multiline. Printing to console instead **"
+            + str(e),
         )
         print(*args, end=end, sep=sep)
 
@@ -25198,7 +25095,7 @@ def _parse_colors_parm(colors):
             else:  # if no "on" then assume the color string is just the text color
                 kw_text_color = dual_color
     except Exception as e:
-        print("* warning * you messed up with color formatting", e)
+        _logger.info("* warning * you messed up with color formatting" + str(e))
 
     return kw_text_color, kw_background_color
 
@@ -27930,9 +27827,9 @@ def theme_button_color(color=None):
             if not SUPPRESS_ERROR_POPUPS:
                 popup_error("theme_button_color - bad color string passed in", color)
             else:
-                print(
-                    "** Badly formatted button color... not a tuple nor string **",
-                    color,
+                _logger.info(
+                    "** Badly formatted button color... not a tuple nor string **"
+                    + str(color),
                 )
             set_options(button_color=color)  # go ahead and try with their string
         else:
@@ -28058,7 +27955,7 @@ def theme_add_new(new_theme_name, new_theme_dict):
     try:
         LOOK_AND_FEEL_TABLE[new_theme_name] = new_theme_dict
     except Exception as e:
-        print("Exception during adding new theme {}".format(e))
+        _logger.info("Exception during adding new theme {}".format(e))
 
 
 def theme_use_custom_titlebar():
@@ -28350,7 +28247,7 @@ def theme_previewer_swatches():
                 chosen_color = event
             else:
                 chosen_color = ""
-        print("Copied to clipboard color = ", chosen_color)
+        _logger.info("Copied to clipboard color = " + chosen_color)
         clipboard_set(chosen_color)
         # window.TKroot.clipboard_clear()
         # window.TKroot.clipboard_append(chosen_color)
@@ -28382,7 +28279,7 @@ def change_look_and_feel(index, force=False):
     global CURRENT_LOOK_AND_FEEL
 
     # if running_mac() and not force:
-    #     print('*** Changing look and feel is not supported on Mac platform ***')
+    #     _logger.info('*** Changing look and feel is not supported on Mac platform ***')
     #     return
 
     requested_theme_name = index
@@ -28409,13 +28306,13 @@ def change_look_and_feel(index, force=False):
         ix = lf_values_lowercase.index(opt3)
     else:
         ix = random.randint(0, len(lf_values_lowercase) - 1)
-        print(
+        _logger.info(
             "** Warning - {} Theme is not a valid theme. Change your theme call. **".format(
                 index
             )
         )
-        print("valid values are", list_of_look_and_feel_values())
-        print(
+        _logger.info("valid values are" + list_of_look_and_feel_values())
+        _logger.info(
             "Instead, please enjoy a random Theme named {}".format(
                 list_of_look_and_feel_values()[ix]
             )
@@ -28456,8 +28353,8 @@ def change_look_and_feel(index, force=False):
             input_text_color=colors["TEXT_INPUT"],
         )
     except Exception:  # most likely an index out of range
-        print("** Warning - Theme value not valid. Change your theme call. **")
-        print("valid values are", list_of_look_and_feel_values())
+        _logger.info("** Warning - Theme value not valid. Change your theme call. **")
+        _logger.info("valid values are" + list_of_look_and_feel_values())
 
 
 # ------------------------ Color processing functions ------------------------
@@ -28772,7 +28669,7 @@ def popup(
                 message, local_line_width, drop_whitespace=drop_whitespace
             )
         message_wrapped_lines = message_wrapped.count("\n") + 1
-        longest_line_len = max([len(l) for l in message.split("\n")])
+        longest_line_len = max([len(k) for k in message.split("\n")])
         width_used = min(longest_line_len, local_line_width)
         max_line_total = max(max_line_total, width_used)
         # height = _GetNumLinesNeeded(message, width_used)
@@ -28922,6 +28819,7 @@ def popup(
         grab_anywhere=grab_anywhere,
         keep_on_top=keep_on_top,
         location=location,
+        finalize=False,
         relative_location=relative_location,
         return_keyboard_events=any_key_closes,
         modal=modal,
@@ -30171,9 +30069,9 @@ def popup_get_folder(
             try:
                 root.wm_overrideredirect(True)
             except Exception as e:
-                print(
-                    "* Error performing wm_overrideredirect while hiding the window during creation in get folder *",
-                    e,
+                _logger.info(
+                    "* Error performing wm_overrideredirect while hiding the window during creation in get folder *"
+                    + str(e),
                 )
             root.withdraw()
         except Exception:
@@ -30409,7 +30307,9 @@ def popup_get_file(
             try:
                 root.wm_overrideredirect(True)
             except Exception as e:
-                print("* Error performing wm_overrideredirect in get file *", e)
+                _logger.info(
+                    "* Error performing wm_overrideredirect in get file *" + str(e)
+                )
             root.withdraw()
         except Exception:
             pass
@@ -30976,7 +30876,9 @@ def popup_get_date(
                 _cal = calendar.TextCalendar(fwday)
             day_names = _cal.formatweekheader(3).split()
         except Exception as e:
-            print("Exception building day names from locale", locale, e)
+            _logger.info(
+                "Exception building day names from locale" + str(locale) + str(e)
+            )
             day_names = ("Sun", "Mon", "Tue", "Wed", "Th", "Fri", "Sat")
     else:
         day_names = day_abbreviations
@@ -31418,7 +31320,7 @@ def _error_popup_with_traceback(title, *args, emoji=None):
                 error_parts[0] + "\n" + error_parts[1] + "\n" + "".join(error_parts[2:])
             )
     if error_parts is None:
-        print("*** Error popup attempted but unable to parse error details ***")
+        _logger.info("*** Error popup attempted but unable to parse error details ***")
         print(trace_details)
         return
     filename = error_parts[0][error_parts[0].index("File ") + 5 :]
@@ -31523,9 +31425,9 @@ def _process_thread(*args):
 
     # start running the command with arugments
     try:
-        __shell_process__ = subprocess.run(args, shell=True, stdout=subprocess.PIPE)
+        __shell_process__ = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE)
     except Exception:
-        print("Exception running process args = {}".format(args))
+        _logger.info("Exception running process args = {}".format(args))
         __shell_process__ = None
 
 
@@ -31796,7 +31698,7 @@ class UserSettings:
                     elif value == "None":
                         value = None
                         self.section_dict[key] = value
-            # print(f'++++++ making a new SectionDict with name = {section_name}')
+            # _logger.info(f'++++++ making a new SectionDict with name = {section_name}')
 
         def __repr__(self):
             """
@@ -31846,14 +31748,14 @@ class UserSettings:
                 self.user_settings_parent.save()
 
         def delete_section(self):
-            # print(f'** Section Dict deleting section = {self.section_name}')
+            # _logger.info(f'** Section Dict deleting section = {self.section_name}')
             self.config.remove_section(section=self.section_name)
             del self.user_settings_parent.section_class_dict[self.section_name]
             if self.user_settings_parent.autosave:
                 self.user_settings_parent.save()
 
         def __getitem__(self, item):
-            # print('*** In SectionDict Get ***')
+            # _logger.info('*** In SectionDict Get ***')
             return self.get(item)
 
         def __setitem__(self, item, value):
@@ -31868,7 +31770,7 @@ class UserSettings:
             :param value: The value to set the setting to
             :type value:  Any
             """
-            # print(f'*** In SectionDict SET *** item = {item} value = {value}')
+            # _logger.info(f'*** In SectionDict SET *** item = {item} value = {value}')
             self.set(item, value)
             self.section_dict[item] = value
 
@@ -31880,13 +31782,13 @@ class UserSettings:
             :param item: The key for the setting to delete
             :type item:  Any
             """
-            # print(f'** In SectionDict delete! section name = {self.section_name} item = {item} ')
+            # _logger.info(f'** In SectionDict delete! section name = {self.section_name} item = {item} ')
             self.config.remove_option(section=self.section_name, option=item)
             try:
                 del self.section_dict[item]
             except Exception:
                 pass
-                # print(e)
+                # _logger.info(e)
             if self.user_settings_parent.autosave:
                 self.user_settings_parent.save()
 
@@ -32160,8 +32062,8 @@ class UserSettings:
                     self.full_filename,
                     e,
                 )
-                # print('*** UserSettings.read - Error reading settings from file: ***\n', self.full_filename, e)
-                # print(_create_error_message())
+                # _logger.info('*** UserSettings.read - Error reading settings from file: ***\n', self.full_filename, e)
+                # _logger.info(_create_error_message())
 
         return self.dict
 
@@ -32214,7 +32116,7 @@ class UserSettings:
         else:
             if section is not None:
                 section_dict = self.get(section)
-                # print(f'** Trying to delete an entry with a config file in use ** id of section_dict = {id(section_dict)}')
+                # _logger.info(f'** Trying to delete an entry with a config file in use ** id of section_dict = {id(section_dict)}')
                 # section_dict = self.section_class_dict[section]
                 del self.get(section)[key]
                 # del section_dict[key]
@@ -32604,10 +32506,10 @@ def execute_command_subprocess(
     try:
         if args is not None:
             expanded_args = " ".join(args)
-            # print('executing subprocess command:',command, 'args:',expanded_args)
+            # _logger.info('executing subprocess command:',command, 'args:',expanded_args)
             if command[0] != '"' and " " in command:
                 command = '"' + command + '"'
-            # print('calling popen with:', command +' '+ expanded_args)
+            # _logger.info('calling popen with:', command +' '+ expanded_args)
             # sp = subprocess.Popen(command +' '+ expanded_args, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=cwd)
             if pipe_output:
                 if merge_stderr_with_stdout:
@@ -32649,9 +32551,9 @@ def execute_command_subprocess(
         if wait:
             out, err = sp.communicate()
             if out:
-                print(out.decode("utf-8"))
+                _logger.info(out.decode("utf-8"))
             if err:
-                print(err.decode("utf-8"))
+                _logger.info(err.decode("utf-8"))
     except Exception as e:
         warnings.warn("Error in execute_command_subprocess {}".format(e), UserWarning)
         _error_popup_with_traceback(
@@ -32737,7 +32639,7 @@ def execute_py_file(
             merge_stderr_with_stdout=merge_stderr_with_stdout,
         )
     else:
-        print("execute_py_file - No interpreter has been configured")
+        _logger.info("execute_py_file - No interpreter has been configured")
         sp = None
     return sp
 
@@ -32800,10 +32702,10 @@ def execute_editor(file_to_edit, line_number=None):
             command = _create_full_editor_command(
                 file_to_edit, line_number, format_string
             )
-            # print('final command line = ', command)
+            # _logger.info('final command line = ', command)
             sp = execute_command_subprocess(editor_program, command)
     else:
-        print("No editor has been configured in the global settings")
+        _logger.info("No editor has been configured in the global settings")
         sp = None
     return sp
 
@@ -32870,7 +32772,7 @@ def execute_file_explorer(folder_to_open=""):
     if explorer_program is not None:
         sp = execute_command_subprocess(explorer_program, folder_to_open)
     else:
-        print("No file explorer has been configured in the global settings")
+        _logger.info("No file explorer has been configured in the global settings")
         sp = None
     return sp
 
@@ -32905,7 +32807,9 @@ def execute_find_callers_filename():
                     + "".join(error_parts[2:])
                 )
         if error_parts is None:
-            print("*** Error popup attempted but unable to parse error details ***")
+            _logger.info(
+                "*** Error popup attempted but unable to parse error details ***"
+            )
             print(trace_details)
             return ""
         filename = error_parts[0][error_parts[0].index("File ") + 5 :]
@@ -33027,7 +32931,7 @@ def _mac_should_apply_notitlebar_patch():
         return False
 
     try:
-        tver = [int(n) for n in framework_version.split(".")]
+        tver = [int(n) for n in tclversion_detailed.split(".")]
         if (
             tver[0] == 8
             and tver[1] == 6
@@ -33038,7 +32942,7 @@ def _mac_should_apply_notitlebar_patch():
     except Exception as e:
         warnings.warn(
             "Exception while trying to parse tkinter version {} Error = {}".format(
-                framework_version, e
+                tclversion_detailed, e
             ),
             UserWarning,
         )
@@ -33054,7 +32958,7 @@ def _mac_should_set_alpha_to_99():
         return False
 
     # ONLY enable this patch for tkinter version 8.6.12
-    if framework_version != "8.6.12":
+    if tclversion_detailed != "8.6.12":
         return False
 
     # At this point, we're running a Mac and the alpha patch is enabled
@@ -33067,7 +32971,7 @@ def _mac_should_set_alpha_to_99():
             else (platform_mac_ver, 0)
         )
         if (int(mac_ver[0]) >= 12 and int(mac_ver[1]) >= 3) or int(mac_ver[0]) >= 13:
-            # print("Mac OS Version is {} and patch enabled so applying the patch".format(platform_mac_ver))
+            # _logger.info("Mac OS Version is {} and patch enabled so applying the patch".format(platform_mac_ver))
             return True
     except Exception as e:
         warnings.warn(
@@ -33109,7 +33013,7 @@ def main_mac_feature_control():
         [T("Feature Control / Settings", font="_ 16 bold")],
         [
             T("You are running tkinter version:", font="_ 12 bold"),
-            T(framework_version, font="_ 12 bold"),
+            T(tclversion_detailed, font="_ 12 bold"),
         ],
     ]
 
@@ -33142,7 +33046,7 @@ def main_mac_feature_control():
             break
         if event == "Ok":
             for key, value in values.items():
-                print("setting {} to {}".format(key, value))
+                _logger.info("setting {} to {}".format(key, value))
                 pysimplegui_user_settings.set(key, value)
             break
     window.close()
@@ -33524,7 +33428,9 @@ class _Debugger:
                         + "".join(error_parts[2:])
                     )
             if error_parts is None:
-                print("*** Error popup attempted but unable to parse error details ***")
+                _logger.info(
+                    "*** Error popup attempted but unable to parse error details ***"
+                )
                 print(trace_details)
                 return ""
             filename = error_parts[0][error_parts[0].index("File ") + 5 :]
@@ -33998,7 +33904,7 @@ def get_versions():
         platform_ver,
         port,
         tclversion_detailed,
-        ver,
+        __version__,
         __file__,
     )
     return versions
@@ -34271,7 +34177,7 @@ MMMMMMMMMMM
 
 
 def _main_entry_point():
-    # print('Restarting main as a new process...(needed in case you want to GitHub Upgrade)')
+    # _logger.info('Restarting main as a new process...(needed in case you want to GitHub Upgrade)')
     # Relaunch using the same python interpreter that was used to run this function
     interpreter = sys.executable
     if "pythonw" in interpreter:
@@ -34387,7 +34293,7 @@ def _global_settings_get_watermark_info():
     prefix_text = pysimplegui_user_settings.get("-watermark text-", "")
 
     ver_text = (
-        " " + version.split(" ", 1)[0]
+        " " + __version__.split(" ", 1)[0]
         if pysimplegui_user_settings.get(
             "-watermark ver-", False if not forced else True
         )
@@ -34395,7 +34301,7 @@ def _global_settings_get_watermark_info():
         else ""
     )
     framework_ver_text = (
-        " Tk " + framework_version
+        " Tk " + tclversion_detailed
         if pysimplegui_user_settings.get(
             "-watermark framework ver-", False if not forced else True
         )
@@ -34433,7 +34339,7 @@ def main_global_get_screen_snapshot_symcode():
 
     screenshot_keysym_manual = settings.get("-snapshot keysym manual-", "")
 
-    # print('BINDING INFO!', screenshot_keysym, screenshot_keysym_manual)
+    # _logger.info('BINDING INFO!', screenshot_keysym, screenshot_keysym_manual)
     if screenshot_keysym_manual:
         return screenshot_keysym_manual
     elif screenshot_keysym:
@@ -34979,9 +34885,9 @@ def main_sdk_help():
         # Build info about init method
         args = inspect.getfullargspec(element.__init__).args[1:]
         defaults = inspect.getfullargspec(element.__init__).defaults
-        # print('------------- {element}----------')
-        # print(args)
-        # print(defaults)
+        # _logger.info('------------- {element}----------')
+        # _logger.info(args)
+        # _logger.info(defaults)
         if len(args) != len(defaults):
             diff = len(args) - len(defaults)
             defaults = ("NO DEFAULT",) * diff + defaults
@@ -35076,7 +34982,7 @@ def main_sdk_help():
             if event in (WIN_CLOSED, "Exit"):
                 break
             if event == "-DOC LINK-":
-                if webbrowser_available and online_help_link:
+                if online_help_link:
                     webbrowser.open_new_tab(online_help_link)
             if event == "-SUMMARY-":
                 event = current_element
@@ -35093,7 +34999,7 @@ def main_sdk_help():
                     ml.print("\n--- Shortcut Aliases for Class ---")
                     for v in vars3:
                         if elem == v[1] and elem.__name__ != v[0]:
-                            print(v[0])
+                            _logger.info(v[0])
                     ml.print("\n--- Init Parms ---")
                 else:
                     elem = element_names[event]
@@ -35250,17 +35156,17 @@ def _create_main_window():
     tkversion = tkinter.TkVersion
     tclversion = tkinter.TclVersion
 
-    print("Starting up PySimpleGUI Diagnostic & Help System")
-    print("PySimpleGUI long version = ", version)
+    _logger.info("Starting up PySimpleGUI Diagnostic & Help System")
+    _logger.info("PySimpleGUI long version = " + __version__)
     print(
         "PySimpleGUI Version ",
-        ver,
+        __version__,
         "\ntcl ver = {}".format(tclversion),
         "tkinter version = {}".format(tkversion),
         "\nPython Version {}".format(sys.version),
     )
-    print("tcl detailed version = {}".format(tclversion_detailed))
-    print("PySimpleGUI.py location", __file__)
+    _logger.info("tcl detailed version = {}".format(tclversion_detailed))
+    _logger.info("PySimpleGUI.py location" + __file__)
     # ------ Menu Definition ------ #
     menu_def = [
         ["&File", ["!&Open", "&Save::savekey", "---", "&Properties", "E&xit"]],
@@ -35575,7 +35481,8 @@ def _create_main_window():
                     key="-TEXT1-",
                 ),
             ],
-            VerLine(ver, "PySimpleGUI Version") + [Image(HEART_3D_BASE64, subsample=4)],
+            VerLine(__version__, "PySimpleGUI Version")
+            + [Image(HEART_3D_BASE64, subsample=4)],
             # VerLine('{}/{}'.format(tkversion, tclversion), 'TK/TCL Versions'),
             VerLine(tclversion_detailed, "detailed tkinter version"),
             VerLine(
@@ -35749,7 +35656,7 @@ def main():
     while True:  # Event Loop
         event, values = window.read(timeout=5)
         if event != TIMEOUT_KEY:
-            print(event, values)
+            _logger.info(event, values)
             # Print(event, text_color='white', background_color='red', end='')
             # Print(values)
         if (
@@ -35795,7 +35702,7 @@ def main():
             popup(
                 "About this program...",
                 "You are looking at the test harness for the PySimpleGUI program",
-                version,
+                __version__,
                 keep_on_top=True,
                 image=DEFAULT_BASE64_ICON,
             )
@@ -35900,7 +35807,7 @@ def main():
 
         i += 1
         # _refresh_debugger()
-    print("event = ", event)
+    _logger.info("event = " + str(event))
     window.close()
     set_options(force_modal_windows=forced_modal)
 
@@ -35966,6 +35873,221 @@ pysimplegui_user_settings = UserSettings(
     path=DEFAULT_USER_SETTINGS_PYSIMPLEGUI_PATH,
 )
 # ------------------------ Set the "Official PySimpleGUI Theme Colors" ------------------------
+
+
+def singleton_window(func: Callable):
+    """
+    窗口单例化装饰器
+    :param func:
+    :return:
+    """
+    _instances = {}
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        key = "{}_{}_{}".format(str(func.__name__), str(args), str(kwargs))
+
+        if key in _instances:
+            window = _instances[key]
+            if not window.was_closed():
+                window.bring_to_front()
+                return window
+
+        new_window = func(*args, **kwargs)
+        _instances[key] = new_window
+        return new_window
+
+    return wrapper
+
+
+class PySimpleEvent:
+    """
+    使用该类创建GUI的事件循环。
+    使用方法：
+    import PySimpleGUI as sg
+    from pyguievent import PySimpleEvent
+
+    app = PySimpleEvent()
+
+    @app.bind_event("_CLICK_")
+    def print_when_click(window: sg.Window, values: dict):
+        print("click it!")
+
+    @app.bind_event(["_CLICK1_","_CLICK2_"])
+    def print_when_more_click(window: sg.Window, values: dict):
+        print('click it!')
+
+    window = sg.Window("测试窗口",layout = [],
+                        keep_on_top=True, # 窗口置顶需要的
+                        finalize=True, # 这个很重要，多窗口模式才需要这个参数
+                        return_keyboard_events=True # 窗口如果需要输入栏回车事件需要这个
+                        )
+
+    app.run_event(window)
+    """
+
+    def __init__(self) -> None:
+        """
+        初始化一个事件数据字典
+        """
+        self._event_handlers = {}
+        # 定义回车键和特殊键的集合，用于后续判断特定键盘事件
+        self._enter_keys = ("special 16777220", "special 16777221", "\r")
+
+    @property
+    def get_events(self) -> dict:
+        """
+        获取所有已注册的事件
+        :return:事件字典
+        """
+        return self._event_handlers
+
+    def _add_event(self, event: str, func: Callable) -> None:
+        """
+        增加事件，把函数和事件做绑定，但是这里基本不用，实际是被下面的 bind_event调用
+        :param event:事件名，是GUI组件的key
+        :param func:函数名，注意，这里只写函数名，不带括号
+        :return:
+        """
+
+        if not str(func.__name__).startswith("on_"):
+            _logger.error("function {} is not start with on_.".format(func))
+            return
+
+        # 确保事件键的唯一性
+        if event not in self._event_handlers:
+            self._event_handlers[event] = func
+
+    def bind_event(self, event_names: Union[str, list]):
+        """
+        一个key只能对应一个事件函数,一个事件函数可以被多个key绑定
+        举例：回车和确定按钮可以提交数据，但是按钮提交不可以即提交数据又做其他事
+        :param event_names: 事件名，可以是字符串或列表，都是GUI的组件key
+        :return: 装饰器函数
+        """
+
+        def decorator(func: Callable):
+            if isinstance(event_names, str):
+                self._add_event(event_names, func)
+            elif isinstance(event_names, list):
+                for event_name in event_names:
+                    self._add_event(event_name, func)
+            else:
+                raise TypeError("event_names must be a string or a list of strings")  # noqa
+
+            # 预处理函数的参数信息
+            func_args = func.__code__.co_varnames  # noqa 类型是tuple
+            func_arg_count = func.__code__.co_argcount  # noqa 类型是init
+            self._event_handlers[func] = {"args": func_args, "count": func_arg_count}
+
+            return func
+
+        return decorator
+
+    def apply_event(self, window: Window, event: str, values: dict) -> None:
+        """
+        处理事件,需要注意的时，默认支持以下五种函数，够用
+        1.func()，这种无参数函数
+        2.func(values=)，这种关键字参数函数，只有一个参数是值
+        3.func(window=)，这种关键字参数函数，只有一个参数是窗口
+        4.func(event=)，这种关键字参数函数，只有一个参数是事件
+        5.参数有window和event,values，顺序无所谓
+        :param window:窗口对象
+        :param event:事件名
+        :param values:值
+        :return:None
+        """
+        try:
+            # 根据事件类型查找对应的处理函数
+            # 如果事件是回车键或特殊键，尝试获取焦点元素对应的处理函数
+            elem = window.find_element_with_focus()
+            handler = (
+                self._event_handlers.get(event)
+                if event not in self._enter_keys
+                else self._event_handlers.get(elem.key)
+                if elem is not None
+                else None
+            )
+            # 如果没有找到处理函数，则直接返回
+            if not handler:
+                # 这里不做任何提示，是因为在GUI开发中会有太多事件没有绑定处理函数的情况
+                # 典型的就是数据输入情况，会出现每个输入都在这里报错
+                return
+
+            handler_info = self._event_handlers.get(handler, {})
+            arg_count = handler_info.get("count", 0)
+
+            # 如果处理函数没有参数，则直接调用
+            if arg_count == 0:
+                handler()
+                return
+
+            vars_name = handler_info.get("args", ())
+            args = []
+            # 根据处理函数的参数名，决定如何调用处理函数
+            if "window" in vars_name:
+                args.append(window)
+            if "event" in vars_name:
+                args.append(event)
+            if "values" in vars_name:
+                args.append(values)
+
+            if len(args) == arg_count:
+                handler(*args)
+            else:
+                _logger.warning(
+                    "Handler {} expects {} arguments, but {} were provided.".format(
+                        handler, arg_count, len(args)
+                    )
+                )
+
+        except Exception as e:
+            _logger.error(
+                "An exception occurred during event handling for event {}: {}".format(
+                    event, e
+                )
+            )
+
+    def run_event(
+        self,
+        main_window: Window,
+        close_event: str = None,  # type: ignore
+        window_log: bool = False,
+    ) -> None:
+        """
+        界面主循环
+        :param main_window: 主窗口对象
+        :param window_log: 是否开启窗口对象，默认是不开的
+        :param close_event:关闭窗口的key，可以是退出，Exit 等等
+        :return: None
+        """
+        try:
+            main_window.finalize()
+            while True:
+                window_obj = read_all_windows()
+                if window_obj is None:
+                    _logger.warning("No window_obj found")
+                    break
+
+                window, event, values = window_obj
+
+                if window_log:
+                    _logger.debug("Event: {}, Values: {}".format(event, values))
+
+                if window is None:
+                    break
+
+                if event in (WIN_CLOSED, close_event):
+                    window.close()
+
+                    if window == main_window:
+                        break
+
+                else:
+                    self.apply_event(window, event, values)  # type: ignore
+        finally:
+            if main_window:
+                main_window.close()
 
 
 theme(theme_global())

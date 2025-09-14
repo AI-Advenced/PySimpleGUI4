@@ -287,7 +287,7 @@ class ButtonMenu(Element):
                         image = image.subsample(image_subsample)
                     if image_zoom is not None:
                         image = image.zoom(int(image_zoom))
-                except Exception as e:
+                except Exception:
                     image = data
 
             if image is not None:

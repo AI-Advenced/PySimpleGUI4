@@ -1,4 +1,3 @@
-from ..core import Element
 from ..constants import *
 from . import Multiline
 
