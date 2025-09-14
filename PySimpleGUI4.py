@@ -38,7 +38,7 @@ try:  # Because Raspberry Pi is still on 3.4....it's not critical if this module
         SupportsAbs,
         Optional,
     )  # because this code has to run on 2.7 can't use real type hints.  Must do typing only in comments
-except Exception:
+except ImportError:
     print(
         '*** Skipping import of Typing module. "pip3 install typing" to remove this warning ***'
     )
@@ -50,27 +50,26 @@ from functools import wraps
 
 try:  # Because Raspberry Pi is still on 3.4....
     import subprocess
-except Exception as e:
-    print("** Import error {} **".format(e))
+except ImportError:
+    print("** Import error **")
 
 import threading
 import itertools
 import json
 import configparser
 import queue
-
-try:
-    import webbrowser
-
-    webbrowser_available = True
-except Exception:
-    webbrowser_available = False
-
 import pydoc
 import os
 import sys
 import ctypes
 import platform
+
+try:
+    import webbrowser
+
+    webbrowser_available = True
+except ImportError:
+    webbrowser_available = False
 
 version = "4.80.3"
 
@@ -268,12 +267,10 @@ def formatted_datetime_now():
     :return:    String with date and time formatted YYYY-MM-DD  HH:MM:SS
     :rtype:     (str)
     """
-    now = datetime.datetime.now()
-    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-    return current_time
+    return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def running_linux():
+def running_linux() -> bool:
     """
     Determines the OS is Linux by using sys.platform
 
@@ -285,7 +282,7 @@ def running_linux():
     return sys.platform.startswith("linux")
 
 
-def running_mac():
+def running_mac() -> bool:
     """
     Determines the OS is Mac by using sys.platform
 
@@ -297,7 +294,7 @@ def running_mac():
     return sys.platform.startswith("darwin")
 
 
-def running_windows():
+def running_windows() -> bool:
     """
     Determines the OS is Windows by using sys.platform
 
@@ -309,7 +306,7 @@ def running_windows():
     return sys.platform.startswith("win")
 
 
-def running_trinket():
+def running_trinket() -> bool:
     """
     A special case for Trinket.  Checks both the OS and the number of environment variables
     Currently, Trinket only has ONE environment variable.  This fact is used to figure out if Trinket is being used.
@@ -9556,7 +9553,7 @@ class Frame(Element):
             args
         ):  # Loop through list of elements and add them to the row
             if type(element) == list:
-                PopupError(
+                PopupError(  # noqa: E721
                     "Error creating Frame layout",
                     "Layout has a LIST instead of an ELEMENT",
                     "This sometimes means you have a badly placed ]",
@@ -20849,7 +20846,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                             element.TKColFrame.canvas.config(height=element.Size[1])
                         elif element.Size[0] is not None:
                             element.TKColFrame.canvas.config(width=element.Size[0])
-                    if not element.BackgroundColor in (None, COLOR_SYSTEM_DEFAULT):
+                    if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                         element.TKColFrame.canvas.config(
                             background=element.BackgroundColor
                         )
@@ -20879,7 +20876,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                             element.TKColFrame.canvas.config(height=element.Size[1])
                         elif element.Size[0] is not None:
                             element.TKColFrame.canvas.config(width=element.Size[0])
-                        if not element.BackgroundColor in (None, COLOR_SYSTEM_DEFAULT):
+                        if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                             element.TKColFrame.canvas.config(
                                 background=element.BackgroundColor
                             )
@@ -22590,7 +22587,7 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
                         width, height = element_size
                     element.tktext_label.config(image=photo, width=width, height=height)
 
-                if not element.BackgroundColor in (None, COLOR_SYSTEM_DEFAULT):
+                if element.BackgroundColor not in (None, COLOR_SYSTEM_DEFAULT):
                     element.tktext_label.config(background=element.BackgroundColor)
 
                 element.tktext_label.image = photo
@@ -36206,17 +36203,8 @@ def main():
             main_get_debug_data()
         elif event == "Edit Me":
             execute_editor(__file__)
-        elif event == "Open GitHub Issue":
-            window.minimize()
-            main_open_github_issue()
-            window.normal()
 
-        elif event == "-UPGRADE SHOW ONLY CRITICAL-":
-            if not running_trinket():
-                pysimplegui_user_settings.set(
-                    "-upgrade show only critical-",
-                    values["-UPGRADE SHOW ONLY CRITICAL-"],
-                )
+
 
         i += 1
         # _refresh_debugger()
