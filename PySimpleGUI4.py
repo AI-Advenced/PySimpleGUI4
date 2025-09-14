@@ -69,7 +69,7 @@ except ImportError:
 
 # INFO START
 port = "PySimpleGUI"
-__version__ = "4.80.5"
+__version__ = "4.80.6"
 __license__ = "GPL-3.0-or-later"
 __author__ = "yunluo"
 __email__ = "sp91@qq.com"
