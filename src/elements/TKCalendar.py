@@ -240,4 +240,3 @@ class TKCalendar(ttk.Frame):
 
         year, month = self._date.year, self._date.month
         return self.datetime(year, month, int(self._selection[0]))
-

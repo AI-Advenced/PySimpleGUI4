@@ -2,7 +2,6 @@ from ..core import Element
 from ..constants import *
 
 
-
 # ---------------------------------------------------------------------- #
 #                           Pane                                         #
 # ---------------------------------------------------------------------- #
@@ -138,4 +137,3 @@ class Pane(Element):
             self._visible = visible
 
     Update = update
-

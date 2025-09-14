@@ -2,7 +2,6 @@ from ..core import Element
 from ..constants import *
 
 
-
 # ---------------------------------------------------------------------- #
 #                           Vertical Separator                           #
 # ---------------------------------------------------------------------- #
@@ -12,7 +11,7 @@ class VerticalSeparator(Element):
     Column Element if extra height is needed
     """
 
-    def __init__(self, color:str=None, pad=None, p=None, key=None, k=None):
+    def __init__(self, color: str = None, pad=None, p=None, key=None, k=None):
         """
         :param color: Color of the line. Defaults to theme's text color. Can be name or #RRGGBB format
         :type color:  (str)
@@ -37,4 +36,3 @@ class VerticalSeparator(Element):
 VSeperator = VerticalSeparator
 VSeparator = VerticalSeparator
 VSep = VerticalSeparator
-

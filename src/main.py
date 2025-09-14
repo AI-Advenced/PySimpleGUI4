@@ -1,5 +1,3 @@
-
-
 # all of the tkinter involved imports
 import tkinter as tk
 
@@ -82,8 +80,6 @@ from functools import wraps
 from .constants import *
 
 
-
-
 def _main_entry_point():
     # print('Restarting main as a new process...(needed in case you want to GitHub Upgrade)')
     # Relaunch using the same python interpreter that was used to run this function
@@ -91,9 +87,6 @@ def _main_entry_point():
     if "pythonw" in interpreter:
         interpreter = interpreter.replace("pythonw", "python")
     execute_py_file(__file__, interpreter_command=interpreter)
-
-
-
 
 
 def _read_mac_global_settings():
@@ -258,11 +251,6 @@ def main_mac_feature_control():
             break
     window.close()
     theme(current_theme)
-
-
-
-
-
 
 
 def _global_settings_get_ttk_scrollbar_info():
@@ -827,8 +815,6 @@ def main_global_pysimplegui_settings():
     return False
 
 
-
-
 def main_sdk_help():
     """
     Display a window that will display the docstrings for each PySimpleGUI Element and the Window object
@@ -1106,7 +1092,6 @@ def main_sdk_help():
     window.close()
 
 
-
 def _main_switch_theme():
     layout = [
         [Text("Click a look and feel color to see demo window")],
@@ -1121,8 +1106,6 @@ def _main_switch_theme():
     if event == "Choose":
         theme_name = values["-LIST-"][0]
         theme(theme_name)
-
-
 
 
 def _create_main_window():
@@ -1624,7 +1607,6 @@ def _create_main_window():
     return window
 
 
-
 def main():
     """
     The PySimpleGUI "Test Harness".  This is meant to be a super-quick test of the Elements.
@@ -1809,9 +1791,6 @@ def main():
     set_options(force_modal_windows=forced_modal)
 
 
-
-
-
 def show_debugger_window(location=(None, None), *args):
     """
     Shows the large main debugger window
@@ -1910,10 +1889,7 @@ def _debugger_window_is_open():
     return False
 
 
-
-
-
-def main_get_debug_data(suppress_popup:bool=False):
+def main_get_debug_data(suppress_popup: bool = False):
     """
     Collect up and display the data needed to file GitHub issues.
     This function will place the information on the clipboard.
@@ -1936,8 +1912,6 @@ def main_get_debug_data(suppress_popup:bool=False):
         )
 
     return message
-
-
 
 
 # -------------------------------- ENTRY POINT IF RUN STANDALONE -------------------------------- #

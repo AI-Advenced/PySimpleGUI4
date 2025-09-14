@@ -3,8 +3,6 @@ from .elements import Text, Button, Input
 from .constants import *
 
 
-
-
 # MM"""""""`YM
 # MM  mmmmm  M
 # M'        .M .d8888b. 88d888b. dP    dP 88d888b. .d8888b.
@@ -2877,5 +2875,3 @@ def _error_popup_with_code(title, filename, line_num, *args, emoji=None):
             execute_editor(filename, line_num)
 
     window.close()
-
-

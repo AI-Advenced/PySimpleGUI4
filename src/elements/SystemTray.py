@@ -1,8 +1,6 @@
 from ..constants import *
 
 
-
-
 # ------------------------------------------------------------------------- #
 #                       Tray CLASS                                      #
 # ------------------------------------------------------------------------- #
@@ -16,10 +14,10 @@ class SystemTray:
     def __init__(
         self,
         menu=None,
-        filename:str=None,
+        filename: str = None,
         data=None,
         data_base64=None,
-        tooltip:str=None,
+        tooltip: str = None,
         metadata=None,
     ):
         """

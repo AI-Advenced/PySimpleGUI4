@@ -1,6 +1,7 @@
 from ..core import Element
 from ..constants import *
 
+
 # ---------------------------------------------------------------------- #
 #                           Horizontal Separator                           #
 # ---------------------------------------------------------------------- #
@@ -35,4 +36,3 @@ class HorizontalSeparator(Element):
 
 HSeparator = HorizontalSeparator
 HSep = HorizontalSeparator
-

@@ -1,6 +1,7 @@
 from ..core import Element
 from ..constants import *
 
+
 # ---------------------------------------------------------------------- #
 #                           Multiline                                    #
 # ---------------------------------------------------------------------- #
@@ -13,9 +14,9 @@ class Multiline(Element):
 
     def __init__(
         self,
-        default_text:str="",
-        enter_submits:bool=False,
-        disabled:bool=False,
+        default_text: str = "",
+        enter_submits: bool = False,
+        disabled: bool = False,
         autoscroll=False,
         autoscroll_only_at_bottom=False,
         border_width=None,
@@ -28,12 +29,12 @@ class Multiline(Element):
         selected_background_color=None,
         horizontal_scroll=False,
         change_submits=False,
-        enable_events:bool=False,
-        do_not_clear:bool=True,
+        enable_events: bool = False,
+        do_not_clear: bool = True,
         key=None,
         k=None,
         write_only=False,
-        auto_refresh:bool=False,
+        auto_refresh: bool = False,
         reroute_stdout=False,
         reroute_stderr=False,
         reroute_cprint=False,
@@ -53,11 +54,11 @@ class Multiline(Element):
         sbar_arrow_width=None,
         sbar_frame_color=None,
         sbar_relief=None,
-        expand_x:bool=False,
-        expand_y:bool=False,
-        rstrip:bool=True,
+        expand_x: bool = False,
+        expand_y: bool = False,
+        rstrip: bool = True,
         right_click_menu=None,
-        visible:bool=True,
+        visible: bool = True,
         metadata=None,
     ):
         """

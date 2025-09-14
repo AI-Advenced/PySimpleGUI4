@@ -139,4 +139,3 @@ class TKProgressBar:
             except Exception:
                 return False
         return True
-

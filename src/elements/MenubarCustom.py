@@ -2,8 +2,6 @@ from ..core import Element
 from ..constants import *
 
 
-
-
 def MenubarCustom(
     menu_definition,
     disabled_text_color=None,
@@ -98,4 +96,3 @@ def MenubarCustom(
         expand_x=True,
         key=key if key is not None else k,
     )
-

@@ -2,11 +2,6 @@ from ..core import Element
 from ..constants import *
 
 
-
-
-
-
-
 # ---------------------------------------------------------------------- #
 #                           Error Element                                #
 # ---------------------------------------------------------------------- #
@@ -49,4 +44,3 @@ class ErrorElement(Element):
 
     Get = get
     Update = update
-

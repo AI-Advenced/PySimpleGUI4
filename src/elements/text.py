@@ -437,7 +437,6 @@ Txt = Text
 T = Text
 
 
-
 # ---------------------------------------------------------------------- #
 #                           Stretch Element                              #
 # ---------------------------------------------------------------------- #
@@ -460,8 +459,6 @@ P = Push
 Stretch = Push
 
 
-
-
 def VPush(background_color=None):
     """
     Acts like a Stretch element found in the Qt port.
@@ -477,4 +474,3 @@ def VPush(background_color=None):
 
 VStretch = VPush
 VP = VPush
-

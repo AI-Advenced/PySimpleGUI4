@@ -39,4 +39,3 @@ class Sizegrip(Element):
 
 
 SGrip = Sizegrip
-

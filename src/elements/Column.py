@@ -474,9 +474,6 @@ class Column(Element):
 Col = Column
 
 
-
-
-
 def pin(elem, vertical_alignment=None, shrink=True, expand_x=None, expand_y=None):
     """
     Pin's an element provided into a layout so that when it's made invisible and visible again, it will
@@ -634,4 +631,3 @@ def vbottom(elem_or_row, expand_x=None, expand_y=None, background_color=None):
         expand_y=expand_y,
         background_color=background_color,
     )
-

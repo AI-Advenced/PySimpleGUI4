@@ -1,5 +1,3 @@
-
-
 # all of the tkinter involved imports
 import tkinter as tk
 
@@ -73,8 +71,6 @@ import ctypes
 import platform
 
 from .constants import *
-
-
 
 
 def list_of_look_and_feel_values():
@@ -806,9 +802,6 @@ def _hsl_to_hsv(h, s, l):
     return h, s, v
 
 
-
-
-
 def _change_ttk_theme(style, theme_name):
     global ttk_theme_in_use
     if theme_name not in style.theme_names():
@@ -824,7 +817,6 @@ def _change_ttk_theme(style, theme_name):
     style.theme_use(theme_name)
     ttk_theme_in_use = theme_name
     return True
-
 
 
 def _make_ttk_style_name(base_style, element, primary_style=False):
@@ -980,4 +972,3 @@ def _make_ttk_scrollbar(element, orientation, window):
 
     if scroll_relief not in (None, COLOR_SYSTEM_DEFAULT):
         style.configure(style_name, relief=scroll_relief)
-

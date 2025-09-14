@@ -443,4 +443,3 @@ class TabGroup(Element):
     FindKeyFromTabName = find_key_from_tab_name
     Get = get
     Layout = layout
-

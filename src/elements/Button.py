@@ -2,6 +2,7 @@ from ..core import Element
 from ..constants import *
 from .. import utils
 
+
 # ---------------------------------------------------------------------- #
 #                           Button Class                                 #
 # ---------------------------------------------------------------------- #
@@ -362,7 +363,9 @@ class Button(Element):
         filetypes = FILE_TYPES_ALL_FILES if self.FileTypes is None else self.FileTypes
 
         if self.BType == BUTTON_TYPE_BROWSE_FOLDER:
-            if utils.running_mac():  # macs don't like seeing the parent window (go firgure)
+            if (
+                utils.running_mac()
+            ):  # macs don't like seeing the parent window (go firgure)
                 folder_name = tk.filedialog.askdirectory(
                     initialdir=self.InitialFolder
                 )  # show the 'get folder' dialog box
@@ -546,9 +549,9 @@ class Button(Element):
 
     def update(
         self,
-        text:str=None,
+        text: str = None,
         button_color=(None, None),
-        disabled:bool=None,
+        disabled: bool = None,
         image_source=None,
         image_data=None,
         image_filename=None,

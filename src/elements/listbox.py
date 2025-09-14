@@ -1,6 +1,7 @@
 from ..core import Element
 from ..constants import *
 
+
 # ---------------------------------------------------------------------- #
 #                           Listbox                                      #
 # ---------------------------------------------------------------------- #
@@ -432,4 +433,3 @@ class Listbox(Element):
 
 LBox = Listbox
 LB = Listbox
-

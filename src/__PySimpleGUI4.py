@@ -238,10 +238,6 @@ _timeit_total = 0
 """
 
 
-
-
-
-
 ttk_part_mapping_dict = copy.copy(DEFAULT_TTK_PART_MAPPING_DICT)
 
 # ------------------------------------------------------------------------- #
@@ -254,7 +250,9 @@ class _TimerPeriodic:
     # Dictionary containing the active timers.  Format is {id : _TimerPeriodic object}
     active_timers = {}  # type: dict[int:_TimerPeriodic]
 
-    def __init__(self, window, frequency_ms:int, key=EVENT_TIMER, repeating:bool=True):
+    def __init__(
+        self, window, frequency_ms: int, key=EVENT_TIMER, repeating: bool = True
+    ):
         """
         :param window:          The window to send events to
         :type window:           Window
@@ -360,6 +358,7 @@ def _timeout_alarm_callback_hidden():
     # Get window that caused return
     Window._window_that_exited = None
 
+
 #####################################  -----  RESULTS   ------ ##################################################
 
 
@@ -367,6 +366,7 @@ def _timeout_alarm_callback_hidden():
 
 
 # ==============================  PROGRESS METER ========================================== #
+
 
 # ========================  EasyPrint           =====#
 # ===================================================#
@@ -697,6 +697,7 @@ def shell_with_animation(
     output = output[output.index("stdout=b'") + 9 : -2]
     return output
 
+
 ####################################################################################################
 
 
@@ -739,5 +740,3 @@ _read_mac_global_settings()
 if _mac_should_set_alpha_to_99():
     # Applyting Mac OS 12.3+ Alpha Channel fix.  Sets the default Alpha Channel to 0.99
     set_options(alpha_channel=0.99)
-
-

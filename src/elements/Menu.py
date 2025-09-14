@@ -2,8 +2,6 @@ from ..core import Element
 from ..constants import *
 
 
-
-
 # ---------------------------------------------------------------------- #
 #                           Menu                                         #
 # ---------------------------------------------------------------------- #
@@ -226,4 +224,3 @@ class Menu(Element):
 
 MenuBar = Menu  # another name for Menu to make it clear it's the Menu Bar
 Menubar = Menu  # another name for Menu to make it clear it's the Menu Bar
-

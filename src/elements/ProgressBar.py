@@ -204,4 +204,3 @@ class ProgressBar(Element):
 PBar = ProgressBar
 Prog = ProgressBar
 Progress = ProgressBar
-

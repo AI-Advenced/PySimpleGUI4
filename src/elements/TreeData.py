@@ -2,8 +2,6 @@ from ..core import Element
 from ..constants import *
 
 
-
-
 class TreeData:
     """
     Class that user fills in to represent their tree data. It's a very simple tree representation with a root "Node"
@@ -117,4 +115,3 @@ class TreeData:
         )
 
     Insert = insert
-

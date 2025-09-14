@@ -1,11 +1,8 @@
-
-
 import tkinter as tk
 from tkinter import ttk
 from typing import Any, Union, Tuple, Optional, Dict, List
 import copy
 import warnings
-
 
 
 # all of the tkinter involved imports
@@ -88,6 +85,7 @@ from .themes import *
 # ------------------------------------------------------------------------- #
 #                       ToolTip used by the Elements                        #
 # ------------------------------------------------------------------------- #
+
 
 class ToolTip:
     """
@@ -193,8 +191,6 @@ class ToolTip:
         self.tipwindow = None
 
 
-
-
 class TTKPartOverrides:
     """
     This class contains "overrides" to the defaults for ttk scrollbars that are defined in the global settings file.
@@ -221,8 +217,6 @@ class TTKPartOverrides:
 
 
 ttk_part_overrides_from_options = TTKPartOverrides()
-
-
 
 
 # ---------------------------------------------------------------------- #
@@ -1321,7 +1315,6 @@ class Element:
 
     SetTooltip = set_tooltip
     SetFocus = set_focus
-
 
 
 # ------------------------------------------------------------------------- #
@@ -4417,9 +4410,6 @@ class Window:
 FlexForm = Window
 
 
-
-
-
 class UserSettings:
     # A reserved settings object for use by the setting functions. It's a way for users
     # to access the user settings without diarectly using the UserSettings class
@@ -5344,10 +5334,10 @@ class _Debugger:
         # BUTTON - clear all
         elif event == "Clear All Auto Watches":
             if (
-                    popup_yes_no(
-                        "Do you really want to clear all Auto-Watches?", "Really Clear??"
-                    )
-                    == "Yes"
+                popup_yes_no(
+                    "Do you really want to clear all Auto-Watches?", "Really Clear??"
+                )
+                == "Yes"
             ):
                 self.local_choices = {}
                 self.custom_watch = ""
@@ -5393,8 +5383,8 @@ class _Debugger:
                 slot += 1
 
             if (
-                    slot + int(not self.custom_watch in (None, ""))
-                    >= _Debugger.NUM_AUTO_WATCH
+                slot + int(not self.custom_watch in (None, ""))
+                >= _Debugger.NUM_AUTO_WATCH
             ):
                 break
         # If a custom watch was set, display that value in the window
@@ -5433,17 +5423,17 @@ class _Debugger:
                 error_parts = error_message.split(", ")
                 if len(error_parts) < 4:
                     error_message = (
-                            error_parts[0]
-                            + "\n"
-                            + error_parts[1]
-                            + "\n"
-                            + "".join(error_parts[2:])
+                        error_parts[0]
+                        + "\n"
+                        + error_parts[1]
+                        + "\n"
+                        + "".join(error_parts[2:])
                     )
             if error_parts is None:
                 print("*** Error popup attempted but unable to parse error details ***")
                 print(trace_details)
                 return ""
-            filename = error_parts[0][error_parts[0].index("File ") + 5:]
+            filename = error_parts[0][error_parts[0].index("File ") + 5 :]
             return filename
         except Exception:
             return
@@ -5655,7 +5645,7 @@ class _Debugger:
         # self.popout_choices = self.local_choices
         self.popout_choices = {}
         if (
-                self.popout_choices == {}
+            self.popout_choices == {}
         ):  # if nothing chosen, then choose all non-_ variables
             for key in sorted(self.locals.keys()):
                 self.popout_choices[key] = not key.startswith("_")
@@ -5760,9 +5750,6 @@ class _Debugger:
             self.popout_window = None
         elif event == "Debugger::RightClick":
             show_debugger_window()
-
-
-
 
 
 # ============================== set_options ========#
@@ -6263,8 +6250,6 @@ def set_options(
     return True
 
 
-
-
 # ----====----====----====----====----==== STARTUP TK ====----====----====----====----====----#
 def StartupTK(window):
     """
@@ -6458,8 +6443,6 @@ def StartupTK(window):
     return
 
 
-
-
 def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
     """
     Reads all windows that are "active" when the call is made. "Active" means that it's been finalized or read.
@@ -6550,8 +6533,6 @@ def read_all_windows(timeout=None, timeout_key=TIMEOUT_KEY):
         event, values = window.ReturnValues
 
     return window, event, values
-
-
 
 
 # @_timeit
@@ -9992,7 +9973,6 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
             anchor = "nw"
             side = tk.LEFT
 
-
         tk_row_frame.pack(
             side=tk.TOP,
             anchor=anchor,
@@ -10008,10 +9988,6 @@ def PackFormIntoFrame(form, containing_frame, toplevel_form):
             tk_row_frame.configure(background=form.BackgroundColor)
 
     return
-
-
-
-
 
 
 def _get_hidden_master_root():
@@ -10127,6 +10103,7 @@ def _convert_window_to_tk(window):
 
     return
 
+
 def _set_icon_for_tkinter_window(root, icon=None, pngbase64=None):
     """
     At the moment, this function is only used by the get_filename or folder with the no_window option set.
@@ -10176,9 +10153,6 @@ def _set_icon_for_tkinter_window(root, icon=None, pngbase64=None):
             except Exception:
                 print("Set icon exception", e)
                 pass
-
-
-
 
 
 def easy_print(
@@ -10314,9 +10288,7 @@ def easy_print_close():
 #           888
 
 
-
-
-def cprint_set_output_destination(window, multiline_key:str):
+def cprint_set_output_destination(window, multiline_key: str):
     """
     Sets up the color print (cprint) output destination
     :param window:        The window that the cprint call will route the output to
@@ -10540,9 +10512,6 @@ def _print_to_element(
         pass
 
 
-
-
-
 # ============================== set_global_icon ====#
 # Sets the icon to be used by default                #
 # ===================================================#
@@ -10558,9 +10527,7 @@ def set_global_icon(icon):
     Window._user_defined_icon = icon
 
 
-
-
-def clipboard_set(new_value:str):
+def clipboard_set(new_value: str):
     """
     Sets the clipboard to a specific value.
     IMPORTANT NOTE - Your PySimpleGUI application needs to remain running until you've pasted
@@ -10593,11 +10560,7 @@ def clipboard_get():
     return value
 
 
-
-
-
-
-def _long_func_thread(window, end_key:str, original_func):
+def _long_func_thread(window, end_key: str, original_func):
     """
     Used to run long operations on the user's behalf. Called by the window object
 
@@ -10625,7 +10588,6 @@ def _exit_mainloop(exiting_window):
         # print('** Exited window mainloop **')
 
 
-
 def _process_thread(*args):
     global __shell_process__
 
@@ -10637,10 +10599,7 @@ def _process_thread(*args):
         __shell_process__ = None
 
 
-
-
-
-def fill_form_with_values(window, values_dict:dict):
+def fill_form_with_values(window, values_dict: dict):
     """
     Fills a window with values provided in a values dictionary { element_key : new_value }
 
@@ -10663,12 +10622,8 @@ def fill_form_with_values(window, values_dict:dict):
             )
 
 
-
-
-
 def AddToReturnDictionary(form, element, value):
     form.ReturnValuesDictionary[element.Key] = value
-
 
 
 def AddToReturnList(form, value):
@@ -10991,6 +10946,7 @@ def _BuildResultsForSubform(form, initialize_only, top_level_form):
 
     return form.ReturnValues
 
+
 def _FindElementWithFocusInSubForm(form):
     """
     Searches through a "sub-form" (can be a window or container) for the current element with focus
@@ -11201,16 +11157,12 @@ def AddMenuItem(
     return return_val
 
 
-
-
-
 # Chr0nic || This is probably *very* bad practice. But it works. Simple, but it works...
 class VarHolder:
     canvas_holder = None
 
     def __init__(self):
         self.canvas_holder = None
-
 
 
 # ========================   TK CODE STARTS HERE ========================================= #

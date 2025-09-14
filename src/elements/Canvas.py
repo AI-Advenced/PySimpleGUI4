@@ -1,6 +1,7 @@
 from ..core import Element
 from ..constants import *
 
+
 # ---------------------------------------------------------------------- #
 #                           Canvas                                       #
 # ---------------------------------------------------------------------- #
@@ -127,8 +128,6 @@ class Canvas(Element):
         return self._TKCanvas
 
     TKCanvas = tk_canvas
-
-
 
 
 # ------------------------- A fake Element... the Pad Element ------------------------- #

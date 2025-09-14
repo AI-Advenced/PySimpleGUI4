@@ -2,6 +2,7 @@ from ..core import Element
 from ..constants import *
 from . import Multiline
 
+
 # ---------------------------------------------------------------------- #
 #                           Output                                       #
 #  Routes stdout, stderr to a scrolled window                            #
@@ -141,4 +142,3 @@ class Output(Multiline):
             sbar_frame_color=sbar_frame_color,
             sbar_relief=sbar_relief,
         )
-

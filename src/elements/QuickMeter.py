@@ -1,4 +1,3 @@
-
 # all of the tkinter involved imports
 import tkinter as tk
 
@@ -73,9 +72,6 @@ import platform
 
 from ..core import Element
 from ..constants import *
-
-
-
 
 
 class _QuickMeter:
@@ -259,15 +255,13 @@ class _QuickMeter:
         return self.stat_messages
 
 
-
-
 def one_line_progress_meter(
-    title:str,
-    current_value:int,
-    max_value:int,
+    title: str,
+    current_value: int,
+    max_value: int,
     *args,
     key="OK for 1 meter",
-    orientation:str="v",
+    orientation: str = "v",
     bar_color=(None, None),
     button_color=None,
     size=DEFAULT_PROGRESS_BAR_SIZE,
@@ -358,4 +352,3 @@ def one_line_progress_meter_cancel(key="OK for 1 meter"):
         _QuickMeter.exit_reasons[key] = METER_REASON_CANCELLED
     except Exception:  # meter is already deleted
         return
-

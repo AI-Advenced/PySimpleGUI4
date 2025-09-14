@@ -1,5 +1,6 @@
-from .elements import Column,Image,Text
+from .elements import Column, Image, Text
 from ..constants import *
+
 
 def Titlebar(
     title="",
@@ -144,4 +145,3 @@ def Titlebar(
         metadata=TITLEBAR_METADATA_MARKER,
         key=key,
     )
-

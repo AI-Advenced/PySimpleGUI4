@@ -8,7 +8,6 @@ from .constants import *
 import inspect
 
 
-
 g_time_start = 0
 g_time_end = 0
 g_time_delta = 0
@@ -114,8 +113,6 @@ def rgb(red, green, blue):
     return "#%02x%02x%02x" % (red, green, blue)
 
 
-
-
 def _random_error_emoji():
     c = random.choice(EMOJI_BASE64_SAD_LIST)
     return c
@@ -124,7 +121,6 @@ def _random_error_emoji():
 def _random_happy_emoji():
     c = random.choice(EMOJI_BASE64_HAPPY_LIST)
     return c
-
 
 
 def __send_dict(ip, port, dict_to_send):
@@ -189,8 +185,6 @@ def __get_linux_distribution():
     return line_tuple
 
 
-
-
 def get_versions():
     """
     Returns a human-readable string of version numbers for:
@@ -230,8 +224,6 @@ def get_versions():
         __file__,
     )
     return versions
-
-
 
 
 def user_settings_filename(filename=None, path=None):
@@ -416,7 +408,6 @@ def user_settings_object():
     :rtype:     (UserSettings)
     """
     return UserSettings._default_for_function_interface
-
 
 
 """
@@ -808,9 +799,6 @@ def execute_get_editor():
     return user_settings_get_entry("-editor program-", global_editor)
 
 
-
-
-
 def _create_error_message():
     """
     Creates an error message containing the filename and line number of the users
@@ -842,9 +830,7 @@ def _create_error_message():
     )
 
 
-
-
-def get_complimentary_hex(color:str):
+def get_complimentary_hex(color: str):
     """
     :param color: color string, like "#RRGGBB"
     :type color:  (str)
@@ -862,8 +848,6 @@ def get_complimentary_hex(color:str):
     # convert the color back to hex by prefixing a #
     comp_color = "#%06X" % comp_color
     return comp_color
-
-
 
 
 # Converts an object's contents into a nice printable string.  Great for dumping debug data
@@ -921,8 +905,6 @@ def obj_to_string(obj, extra="    "):
             )
         )
     )
-
-
 
 
 def _simplified_dual_color_to_tuple(color_tuple_or_string, default=(None, None)):
@@ -1000,10 +982,6 @@ def _simplified_dual_color_to_tuple(color_tuple_or_string, default=(None, None))
     return text_color, background_color
 
 
-
-
-
-
 def button_color_to_tuple(color_tuple_or_string, default=(None, None)):
     """
     Convert a color tuple or color string into 2 components and returns them as a tuple
@@ -1030,10 +1008,6 @@ def button_color_to_tuple(color_tuple_or_string, default=(None, None)):
         )
 
     return color_tuple
-
-
-
-
 
 
 def _parse_colors_parm(colors):
@@ -1069,9 +1043,6 @@ def _parse_colors_parm(colors):
     return kw_text_color, kw_background_color
 
 
-
-
-
 def convert_args_to_single_string(*args):
     """ """
     (
@@ -1094,14 +1065,10 @@ def convert_args_to_single_string(*args):
     return single_line_message, width_used, total_lines
 
 
-
-
-
-
 # ==============================_GetNumLinesNeeded ==#
 # Helper function for determining how to wrap text   #
 # ===================================================#
-def _GetNumLinesNeeded(text, max_line_width:int):
+def _GetNumLinesNeeded(text, max_line_width: int):
     if max_line_width == 0:
         return 1
     lines = text.split("\n")
@@ -1114,4 +1081,3 @@ def _GetNumLinesNeeded(text, max_line_width:int):
         )  # fancy math to round up
     total_lines_needed = sum(lines_used)
     return total_lines_needed
-
