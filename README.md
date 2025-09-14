@@ -58,9 +58,8 @@ You can verify that the legacy version is installed correctly by running a simpl
 
 ```python
 import PySimpleGUI4 as sg
-from pyguievent import PySimpleEvent # noqa
 
-app = PySimpleEvent()
+app = sg.PySimpleEvent()
 
 
 def make_main_window() -> sg.Window:

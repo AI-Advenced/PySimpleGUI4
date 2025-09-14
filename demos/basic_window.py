@@ -80,7 +80,6 @@ def on_no_arg_fun(event: str):
         "新建任务",
         event,
         title="关于程序",
-        keep_on_top=True,
     )
 
 
@@ -90,7 +89,6 @@ def on_win_fun(window: sg.Window):
         "软件说明：",
         "新建任务",
         title="关于程序",
-        keep_on_top=True,
     )
     window["lot2"].set_focus(force=True)
     sg._logger.info("sdfgsdf")
@@ -106,7 +104,6 @@ def on_val_fun(values):
         lot1,
         lot2,
         title="关于程序",
-        keep_on_top=True,
     )
 
 
@@ -116,7 +113,6 @@ def on_win_val_fun(window, values):
         "软件说明：",
         "新建任务",
         title="关于程序",
-        keep_on_top=True,
     )
     lot1 = values.get("lot1")
     window["lot3"].update(lot1)
